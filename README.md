@@ -28,6 +28,7 @@ Marketing Mix Modeling tool — upload your media spend data, get Bayesian MMM a
 
 - Node.js 20+
 - Python 3.11+
+- [uv](https://docs.astral.sh/uv/)
 - Supabase project
 - Anthropic API key
 
@@ -46,10 +47,8 @@ npm run dev
 
 # Backend
 cd backend
-python -m venv .venv
-source .venv/bin/activate  # or .venv\Scripts\activate on Windows
-pip install -r requirements.txt
-uvicorn main:app --reload
+uv sync
+uv run uvicorn main:app --reload
 ```
 
 ### CSV format

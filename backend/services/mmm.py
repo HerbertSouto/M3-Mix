@@ -1,6 +1,11 @@
+import warnings
 import numpy as np
 import pandas as pd
-from pymc_marketing.mmm import MMM, GeometricAdstock, LogisticSaturation
+# Pin to legacy MMM API (deprecated in 0.19, removed in 0.20)
+# Tracked for migration: https://www.pymc-marketing.io/en/latest/notebooks/mmm/mmm_migration_guide.html
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", DeprecationWarning)
+    from pymc_marketing.mmm import MMM, GeometricAdstock, LogisticSaturation
 
 
 def fit_mmm(

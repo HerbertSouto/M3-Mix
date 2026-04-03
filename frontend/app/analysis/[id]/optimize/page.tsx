@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BudgetSlider } from '@/components/optimize/BudgetSlider'
@@ -15,6 +15,7 @@ export default function OptimizePage() {
   const [budget, setBudget] = useState(0)
   const [optimized, setOptimized] = useState<BudgetRecommendation | null>(null)
   const [loading, setLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -58,7 +59,8 @@ export default function OptimizePage() {
 
   const handleBudgetChange = (v: number) => {
     setBudget(v)
-    runOptimize(v)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => runOptimize(v), 400)
   }
 
   if (!results || !optimized) {
@@ -85,6 +87,7 @@ export default function OptimizePage() {
         </CardHeader>
         <CardContent>
           <BudgetSlider
+            key={`${Math.round(currentTotal * 0.5)}-${Math.round(currentTotal * 2)}`}
             value={budget}
             min={Math.round(currentTotal * 0.5)}
             max={Math.round(currentTotal * 2)}

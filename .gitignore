@@ -48,3 +48,6 @@ yarn-error.log*
 # Misc
 *.pem
 coverage/
+
+# Claude Code memory/session files
+.claude/

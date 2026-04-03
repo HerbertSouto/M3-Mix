@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: dbError.message }, { status: 500 })
   }
 
-  await fetch(`${process.env.FASTAPI_URL}/analyze`, {
+  const backendRes = await fetch(`${process.env.FASTAPI_URL}/analyze`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -42,7 +42,18 @@ export async function POST(req: NextRequest) {
       csv_url: publicUrl,
       channels,
     }),
+  }).catch((err: Error) => {
+    console.error('[upload] FastAPI unreachable:', err.message)
+    return null
   })
+
+  if (!backendRes || !backendRes.ok) {
+    const detail = backendRes ? await backendRes.text() : 'FastAPI offline'
+    console.error('[upload] FastAPI error:', detail)
+    // Mark analysis as failed so frontend doesn't poll forever
+    await supabase.from('analyses').update({ status: 'failed', step: 'error' }).eq('id', analysis.id)
+    return NextResponse.json({ error: `Backend error: ${detail}` }, { status: 502 })
+  }
 
   return NextResponse.json({ analysis_id: analysis.id })
 }

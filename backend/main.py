@@ -1,8 +1,19 @@
+import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Must be set before pytensor is imported (happens via routers → mmm.py)
+# Disables C compilation to avoid "Access Denied" DLL errors on Windows/OneDrive
+os.environ.setdefault("PYTENSOR_FLAGS", "cxx=")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 from routers import analyze, optimize, chat
 

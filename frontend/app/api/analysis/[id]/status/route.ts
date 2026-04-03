@@ -10,11 +10,11 @@ export async function GET(
 
   const { data, error } = await supabase
     .from('analyses')
-    .select('id, status')
+    .select('id, status, step')
     .eq('id', id)
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 404 })
 
-  return NextResponse.json({ analysis_id: data.id, status: data.status })
+  return NextResponse.json({ analysis_id: data.id, status: data.status, step: data.step })
 }

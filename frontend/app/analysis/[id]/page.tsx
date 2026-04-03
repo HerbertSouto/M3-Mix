@@ -58,17 +58,30 @@ export default async function AnalysisPage({ params }: Props) {
 
   const typedResults = results as AnalysisResults
 
+  const createdAt = new Date(analysis.created_at).toLocaleDateString('pt-BR', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  })
+
   return (
-    <main className="max-w-7xl mx-auto p-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Análise MMM</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Canais: {analysis.channels.map((c: string) => c.replace('_spend', '')).join(', ')}
+    <main className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Relatório de Mix de Mídia
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight">Análise MMM</h1>
+          <p className="text-sm text-muted-foreground">
+            {analysis.channels.map((c: string) => (
+              <span key={c} className="inline-flex items-center mr-2 capitalize">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/50 mr-1" />
+                {c.replace('_spend', '')}
+              </span>
+            ))}
+            <span className="ml-1 text-muted-foreground/60">· {createdAt}</span>
           </p>
         </div>
         <Link href={`/analysis/${id}/optimize`}>
-          <Button variant="outline">Otimizar Budget →</Button>
+          <Button>Otimizar Budget →</Button>
         </Link>
       </div>
 

@@ -191,8 +191,8 @@ export default async function AnalysisPage({ params }: Props) {
         {/* 2. AI Narrative — recomendações primeiro */}
         <section>
           <SectionHeader
-            title="O que fazer agora"
-            sub="A inteligência artificial leu os resultados do modelo e traduziu em ações concretas para o seu negócio."
+            title="A história dos seus dados"
+            sub="Da situação geral ao diagnóstico por canal — o modelo leu os números e construiu uma narrativa de decisão para o seu negócio."
           />
           <NarrativePanel narrative={typedResults.ai_narrative} />
         </section>

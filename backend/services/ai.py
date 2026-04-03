@@ -12,34 +12,84 @@ def get_client() -> Groq:
     return _client
 
 
+def _saturation_summary(saturation: dict) -> str:
+    lines = []
+    for ch, points in saturation.items():
+        if not points:
+            continue
+        max_y = max(p["y"] for p in points)
+        sat_point = next((p for p in points if p["y"] >= max_y * 0.9), None)
+        max_spend = max(p["x"] for p in points)
+        current_est = max_spend / 1.5
+        saturated = sat_point and current_est >= sat_point["x"] * 0.85
+        status = "SATURADO" if saturated else "pode escalar"
+        sat_str = f"satura em R${sat_point['x']:,.0f}" if sat_point else "ponto de saturação não identificado"
+        lines.append(f"- {ch}: {status} ({sat_str}, spend atual estimado R${current_est:,.0f})")
+    return "\n".join(lines)
+
+
+def _channel_role(ch: str) -> str:
+    name = ch.replace("_spend", "").lower()
+    if any(k in name for k in ("search", "sem", "paid")):
+        return "captura de demanda (converte intenção existente)"
+    if any(k in name for k in ("tv", "social", "display", "ooh", "radio", "youtube")):
+        return "geração de demanda (cria intenção nova)"
+    return "papel indefinido"
+
+
 def generate_narrative(analysis_results: dict) -> str:
-    """Generate a one-shot narrative analysis of MMM results."""
+    """Generate a structured 4-section narrative following Situação → Diagnóstico → Interpretação → Ação."""
     roas = analysis_results["roas"]
     contributions = analysis_results["contributions"]
+    saturation = analysis_results.get("saturation", {})
+    budget_rec = analysis_results.get("budget_recommendation", {})
 
-    prompt = f"""Você é um analista de marketing especialista em Marketing Mix Modeling.
-Analise os resultados abaixo e produza um relatório executivo em português do Brasil.
+    incremental = 1 - contributions.get("baseline", 0)
+    avg_roas = sum(roas.values()) / len(roas) if roas else 0
+    channels_sorted = sorted(roas.keys(), key=lambda c: roas[c], reverse=True)
 
-## Resultados do Modelo MMM
+    channel_data = "\n".join(
+        f"- {ch}: ROAS {roas[ch]:.2f}x | contribuição {contributions.get(ch, 0)*100:.1f}% | papel: {_channel_role(ch)}"
+        for ch in channels_sorted
+    )
+    sat_data = _saturation_summary(saturation)
+    uplift = budget_rec.get("uplift_percent", 0)
 
-**ROAS por canal:**
-{chr(10).join(f"- {ch}: {v:.2f}" for ch, v in roas.items())}
+    prompt = f"""Você é um analista sênior de Marketing Mix Modeling. Escreva um relatório executivo em português do Brasil com exatamente 4 seções abaixo. Use os dados fornecidos — nunca invente números.
 
-**Contribuição de cada canal para a receita total:**
-{chr(10).join(f"- {ch}: {v*100:.1f}%" for ch, v in contributions.items())}
+## DADOS DA ANÁLISE
 
-## Instruções para o relatório
+ROAS médio: {avg_roas:.2f}x
+Receita incremental (mídia): {incremental*100:.1f}%
+Receita orgânica (baseline): {(1-incremental)*100:.1f}%
 
-Escreva em 3 seções:
-1. **Resumo executivo** (2-3 frases): qual canal performa melhor, qual é a situação geral
-2. **Pontos de atenção**: canais com ROAS abaixo de 1.0 (prejuízo), canais próximos da saturação
-3. **Recomendações**: 2-3 ações concretas baseadas nos dados
+Canais (ordenados por ROAS):
+{channel_data}
 
-Seja direto e use linguagem de negócios. Não explique o que é MMM."""
+Saturação por canal:
+{sat_data}
+
+Potencial de uplift com redistribuição de budget: {uplift:.1f}%
+
+## ESTRUTURA DO RELATÓRIO (siga exatamente)
+
+## Situação
+(1 parágrafo) Descreva a situação geral: ROAS médio, quanto da receita vem de mídia vs orgânico, e o que isso significa para o negócio.
+
+## Diagnóstico por canal
+(lista numerada, 1 item por canal) Para cada canal: ROAS + contribuição + se está saturado ou pode escalar. Conecte eficiência com volume — canal eficiente com baixa contribuição é diferente de canal com alto volume.
+
+## Interpretação
+(1 parágrafo) Explique o papel de cada canal na estratégia: quem gera demanda (TV/Social) vs quem captura (Search). Como eles se complementam. Por que canais de captura tendem a ter ROAS maior mas dependem dos canais de awareness para ter volume.
+
+## Ação recomendada
+(lista numerada, 3 ações) O que aumentar, manter e reduzir — com justificativa baseada em ROAS + saturação. Se houver uplift possível com redistribuição, mencione.
+
+Seja direto. Linguagem de negócios. Sem introduções ou conclusões fora das seções."""
 
     response = get_client().chat.completions.create(
         model="llama-3.3-70b-versatile",
-        max_tokens=1024,
+        max_tokens=1200,
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content

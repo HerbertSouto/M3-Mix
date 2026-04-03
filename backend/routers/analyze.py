@@ -19,13 +19,8 @@ def _run_analysis(analysis_id: str, csv_url: str, channels: list[str]):
         logger.info("[%s] downloading file: %s", analysis_id, csv_url)
         update_analysis_status(analysis_id, "processing", step="downloading")
         file_bytes = download_csv(csv_url)
-        if csv_url.endswith('.xlsx'):
-            # Prefer sheet named 'dataset', otherwise first sheet
-            xl = pd.ExcelFile(io.BytesIO(file_bytes))
-            sheet = 'dataset' if 'dataset' in xl.sheet_names else xl.sheet_names[0]
-            df = xl.parse(sheet, parse_dates=["date"])
-        else:
-            df = pd.read_csv(io.BytesIO(file_bytes), parse_dates=["date"])
+        df = pd.read_csv(io.BytesIO(file_bytes), parse_dates=["date"])
+        df = df.dropna(subset=["date"]).drop_duplicates(subset=["date"]).reset_index(drop=True)
         logger.info("[%s] file loaded — shape=%s  columns=%s", analysis_id, df.shape, list(df.columns))
 
         # Auto-detect control columns (not date, revenue, or _spend)

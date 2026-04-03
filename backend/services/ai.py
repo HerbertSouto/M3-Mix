@@ -183,7 +183,7 @@ Regras:
 - Se a pergunta não puder ser respondida com os dados disponíveis, diga claramente o que falta."""
 
     stream = get_client().chat.completions.create(
-        model="deepseek-r1-distill-llama-70b",
+        model="llama-3.3-70b-versatile",
         max_tokens=512,
         messages=[
             {"role": "system", "content": system},

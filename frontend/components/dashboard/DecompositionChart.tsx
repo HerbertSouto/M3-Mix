@@ -103,11 +103,16 @@ export function DecompositionChart({ decomposition }: Props) {
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: 'hsl(var(--card))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '8px',
+                backgroundColor: '#13131f',
+                border: '1px solid rgba(238,238,245,.12)',
+                borderRadius: '10px',
                 fontSize: '12px',
+                color: '#eeeef5',
+                boxShadow: '0 8px 32px rgba(0,0,0,.5)',
+                padding: '10px 14px',
               }}
+              labelStyle={{ color: 'rgba(238,238,245,.5)', marginBottom: 6, fontSize: 11 }}
+              itemStyle={{ color: '#eeeef5', padding: '2px 0' }}
               formatter={(v: unknown, name: unknown) => [
                 formatBRL(Number(v)),
                 String(name).replace('_spend', ''),

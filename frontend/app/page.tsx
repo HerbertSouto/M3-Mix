@@ -342,6 +342,74 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── SAMPLE DATA ── */}
+      <section style={{
+        position:'relative',zIndex:10,
+        maxWidth:1100,margin:'0 auto',
+        padding:'0 32px 96px',
+      }}>
+        <div style={{
+          border:'1px solid rgba(238,238,245,.08)',
+          borderRadius:16,
+          background:'rgba(238,238,245,.02)',
+          padding:'36px 40px',
+          display:'flex',alignItems:'center',justifyContent:'space-between',gap:32,
+          flexWrap:'wrap',
+        }}>
+          <div style={{display:'flex',alignItems:'flex-start',gap:20}}>
+            <div style={{
+              width:44,height:44,borderRadius:10,flexShrink:0,
+              background:'rgba(238,238,245,.06)',
+              border:'1px solid rgba(238,238,245,.1)',
+              display:'flex',alignItems:'center',justifyContent:'center',
+              fontSize:20,
+            }}>
+              📊
+            </div>
+            <div>
+              <p style={{
+                fontFamily:SYNE,fontWeight:700,fontSize:16,
+                letterSpacing:'-.01em',marginBottom:6,color:'#eeeef5',
+              }}>
+                Não tem dados agora? Use o nosso exemplo.
+              </p>
+              <p style={{fontSize:13,color:'rgba(238,238,245,.35)',lineHeight:1.6,maxWidth:480}}>
+                Baixe um dataset sintético com 131 semanas, 3 canais de mídia e variáveis de controle
+                — pronto para testar o M3-Mix agora mesmo.
+              </p>
+              <div style={{display:'flex',gap:16,marginTop:12,flexWrap:'wrap'}}>
+                {['131 semanas','TV · Search · Social','Promoção · Sazonalidade'].map(tag=>(
+                  <span key={tag} style={{
+                    fontSize:11,color:'rgba(238,238,245,.4)',
+                    border:'1px solid rgba(238,238,245,.1)',
+                    borderRadius:99,padding:'3px 10px',
+                    fontFamily:'var(--font-geist-mono),monospace',
+                  }}>{tag}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <a
+            href="/exemplo-mmm.xlsx"
+            download
+            style={{
+              flexShrink:0,
+              background:'rgba(238,238,245,.06)',
+              color:'#eeeef5',
+              border:'1px solid rgba(238,238,245,.12)',
+              borderRadius:8,padding:'11px 24px',
+              fontFamily:SYNE,fontWeight:700,fontSize:13,
+              cursor:'pointer',letterSpacing:'-.01em',
+              textDecoration:'none',display:'inline-block',
+              transition:'background .2s,border-color .2s',
+              whiteSpace:'nowrap',
+            }}
+          >
+            Baixar dataset de exemplo ↓
+          </a>
+        </div>
+      </section>
+
       {/* ── FOOTER CTA ── */}
       <section style={{
         position:'relative',zIndex:10,

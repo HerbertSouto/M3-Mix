@@ -192,7 +192,7 @@ export default function HomePage() {
       {/* ── UPLOAD ZONE — protagonista ── */}
       <section ref={uploadRef} style={{
         position:'relative',zIndex:10,
-        maxWidth:640,margin:'0 auto',
+        maxWidth:780,margin:'0 auto',
         padding:'0 24px 80px',
       }}>
         <div

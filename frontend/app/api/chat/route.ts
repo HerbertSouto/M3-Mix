@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60_000), // 60s max — Groq can be slow on first token
     })
   } catch {
     return new Response('data: [ERROR] Backend unavailable\n\ndata: [DONE]\n\n', {

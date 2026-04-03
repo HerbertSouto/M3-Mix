@@ -23,7 +23,8 @@ export function BudgetSlider({ value, min, max, onChange }: Props) {
         max={max}
         step={Math.max(1, Math.round((max - min) / 100))}
         onValueChange={(v) => {
-          if (typeof v[0] === 'number') onChange(v[0])
+          const val = Array.isArray(v) ? v[0] : v
+          if (typeof val === 'number') onChange(val)
         }}
         className="w-full"
       />

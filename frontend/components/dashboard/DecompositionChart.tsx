@@ -108,9 +108,9 @@ export function DecompositionChart({ decomposition }: Props) {
                 borderRadius: '8px',
                 fontSize: '12px',
               }}
-              formatter={(v: unknown, name: string) => [
+              formatter={(v: unknown, name: unknown) => [
                 formatBRL(Number(v)),
-                name.replace('_spend', ''),
+                String(name).replace('_spend', ''),
               ]}
               labelFormatter={(l) => `Data: ${l}`}
             />

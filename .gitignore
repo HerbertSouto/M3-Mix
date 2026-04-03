@@ -51,3 +51,5 @@ coverage/
 
 # Claude Code memory/session files
 .claude/
+
+melhorias.md

@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Must be set before pytensor is imported (happens via routers → mmm.py)
-# Disables C compilation to avoid "Access Denied" DLL errors on Windows/OneDrive
-os.environ.setdefault("PYTENSOR_FLAGS", "cxx=")
+# .env takes precedence (base_compiledir); this is the safe fallback for envs without .env
+os.environ.setdefault("PYTENSOR_FLAGS", "base_compiledir=C:/Users/herbe/AppData/Local/pytensor_cache")
 
 logging.basicConfig(
     level=logging.INFO,

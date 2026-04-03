@@ -11,8 +11,8 @@ with warnings.catch_warnings():
 def fit_mmm(
     df: pd.DataFrame,
     channel_columns: list[str],
-    draws: int = 50,
-    tune: int = 50,
+    draws: int = 500,
+    tune: int = 500,
     target_accept: float = 0.9,
 ) -> MMM:
     """Fit a Bayesian MMM and return the fitted model."""

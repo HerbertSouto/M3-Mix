@@ -10,11 +10,15 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServerClient()
 
+  const isXlsx = file.name.endsWith('.xlsx')
   const filename = `${Date.now()}-${file.name}`
   const bytes = await file.arrayBuffer()
+  const contentType = isXlsx
+    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    : 'text/csv'
   const { error: uploadError } = await supabase.storage
     .from('csv-uploads')
-    .upload(filename, bytes, { contentType: 'text/csv' })
+    .upload(filename, bytes, { contentType })
 
   if (uploadError) {
     return NextResponse.json({ error: uploadError.message }, { status: 500 })

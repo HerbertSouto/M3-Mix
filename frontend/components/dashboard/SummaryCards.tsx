@@ -82,29 +82,51 @@ export function SummaryCards({ results }: Props) {
   const incrementalShare = 1 - (contributions.baseline ?? 0)
   const roasBadge     = roasLabel(avgRoas)
   const topRoas       = roas[topChannel]
+  const incrementalUnreal = incrementalShare > 0.95
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-      <StatCard
-        eyebrow="ROAS Médio"
-        value={`${avgRoas.toFixed(2)}x`}
-        meaning={`Para cada R$1 investido em mídia, você obteve em média R$${avgRoas.toFixed(2)} de retorno em receita.`}
-        badge={roasBadge}
-        accentColor="#3b82f6"
-      />
-      <StatCard
-        eyebrow="Canal Mais Eficiente"
-        value={topChannel?.replace('_spend', '')}
-        meaning={`${topChannel?.replace('_spend','')} entregou ROAS de ${topRoas?.toFixed(2)}x — o maior retorno entre todos os canais analisados.`}
-        badge={{ text: `${topRoas?.toFixed(1)}x ROAS`, color: '#34d399' }}
-        accentColor="#34d399"
-      />
-      <StatCard
-        eyebrow="Receita Incremental"
-        value={`${(incrementalShare * 100).toFixed(1)}%`}
-        meaning={`${(incrementalShare * 100).toFixed(1)}% da sua receita total foi gerada pelos canais de mídia. Os outros ${(100 - incrementalShare * 100).toFixed(1)}% viriam de qualquer forma (orgânico, marca, sazonalidade).`}
-        accentColor="#8b5cf6"
-      />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
+        <StatCard
+          eyebrow="ROAS Médio"
+          value={`${avgRoas.toFixed(2)}x`}
+          meaning={`Para cada R$1 investido em mídia, você obteve em média R$${avgRoas.toFixed(2)} de retorno em receita.`}
+          badge={roasBadge}
+          accentColor="#3b82f6"
+        />
+        <StatCard
+          eyebrow="Canal Mais Eficiente"
+          value={topChannel?.replace('_spend', '')}
+          meaning={`${topChannel?.replace('_spend','')} entregou ROAS de ${topRoas?.toFixed(2)}x — o maior retorno entre todos os canais analisados.`}
+          badge={{ text: `${topRoas?.toFixed(1)}x ROAS`, color: '#34d399' }}
+          accentColor="#34d399"
+        />
+        <StatCard
+          eyebrow="Receita Incremental"
+          value={`${(incrementalShare * 100).toFixed(1)}%`}
+          meaning={`${(incrementalShare * 100).toFixed(1)}% da sua receita total foi gerada pelos canais de mídia. Os outros ${(100 - incrementalShare * 100).toFixed(1)}% viriam de qualquer forma (orgânico, marca, sazonalidade).`}
+          accentColor="#8b5cf6"
+        />
+      </div>
+
+      {incrementalUnreal && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          background: 'rgba(251,146,60,.07)',
+          border: '1px solid rgba(251,146,60,.25)',
+          borderRadius: 10, padding: '12px 16px',
+        }}>
+          <span style={{ fontSize: 15, lineHeight: 1, marginTop: 1 }}>⚠</span>
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 600, color: '#fb923c', marginBottom: 2 }}>
+              Receita incremental acima de 95%
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(238,238,245,.4)', lineHeight: 1.5 }}>
+              Quando a mídia parece responder por quase toda a receita, geralmente significa que o modelo tem poucos dados ou variações de spend pequenas demais para separar o efeito orgânico. Adicione mais semanas de histórico ou variáveis de controle (sazonalidade, promoções) para calibrar melhor o baseline.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

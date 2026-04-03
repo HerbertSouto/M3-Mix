@@ -11,18 +11,21 @@ with warnings.catch_warnings():
 def fit_mmm(
     df: pd.DataFrame,
     channel_columns: list[str],
+    control_columns: list[str] | None = None,
     draws: int = 500,
     tune: int = 500,
     target_accept: float = 0.9,
 ) -> MMM:
     """Fit a Bayesian MMM and return the fitted model."""
+    controls = control_columns or []
     mmm = MMM(
         adstock=GeometricAdstock(l_max=8),
         saturation=LogisticSaturation(),
         date_column="date",
         channel_columns=channel_columns,
+        control_columns=controls if controls else None,
     )
-    X = df[["date"] + channel_columns]
+    X = df[["date"] + channel_columns + controls]
     y = df["revenue"]
     mmm.fit(
         X,
@@ -41,6 +44,7 @@ def extract_results(
     mmm: MMM,
     df: pd.DataFrame,
     channel_columns: list[str],
+    control_columns: list[str] | None = None,
 ) -> dict:
     """Extract structured results from a fitted MMM model."""
 
@@ -62,6 +66,26 @@ def extract_results(
         contributions[ch] = ch_total / total_revenue if total_revenue > 0 else 0.0
     channels_total = sum(contributions.values())
     contributions["baseline"] = max(0.0, 1.0 - channels_total)
+
+    # --- Contribution credible intervals (5th–95th percentile) ---
+    contribution_intervals: dict[str, dict] = {}
+    try:
+        idata = mmm.idata
+        beta_samples = idata.posterior["beta_channel"]  # (chain, draw, channel)
+        for ch in channel_columns:
+            betas = beta_samples.sel(channel=ch).values.flatten()
+            median_beta = float(np.median(betas))
+            if median_beta > 0 and ch in contributions_df.columns:
+                mean_contrib = float(contributions_df[ch].sum()) / total_revenue
+                q5_ratio  = float(np.percentile(betas,  5)) / median_beta
+                q95_ratio = float(np.percentile(betas, 95)) / median_beta
+                contribution_intervals[ch] = {
+                    "mean":  mean_contrib,
+                    "lower": max(0.0, mean_contrib * q5_ratio),
+                    "upper": min(1.0, mean_contrib * q95_ratio),
+                }
+    except Exception:
+        pass  # intervals are optional — silently skip if unavailable
 
     # --- Adstock alpha from posterior samples ---
     adstock: dict[str, float] = {}
@@ -134,6 +158,7 @@ def extract_results(
     return {
         "roas": roas,
         "contributions": contributions,
+        "contribution_intervals": contribution_intervals,
         "adstock": adstock,
         "saturation": saturation,
         "decomposition": decomposition,

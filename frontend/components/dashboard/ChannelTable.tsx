@@ -1,5 +1,25 @@
 import { AnalysisResults } from '@/lib/types'
 
+const CHANNEL_ROLE: Record<string, { label: string; color: string }> = {
+  search:  { label: 'Captura de demanda',   color: '#10b981' },
+  sem:     { label: 'Captura de demanda',   color: '#10b981' },
+  paid:    { label: 'Captura de demanda',   color: '#10b981' },
+  tv:      { label: 'Geração de demanda',   color: '#3b82f6' },
+  social:  { label: 'Geração de demanda',   color: '#8b5cf6' },
+  display: { label: 'Geração de demanda',   color: '#8b5cf6' },
+  ooh:     { label: 'Geração de demanda',   color: '#f59e0b' },
+  radio:   { label: 'Geração de demanda',   color: '#f59e0b' },
+  youtube: { label: 'Geração de demanda',   color: '#f43f5e' },
+}
+
+function getRole(ch: string) {
+  const key = ch.replace('_spend', '').toLowerCase()
+  for (const [k, v] of Object.entries(CHANNEL_ROLE)) {
+    if (key.includes(k)) return v
+  }
+  return null
+}
+
 interface Props {
   results: AnalysisResults
 }
@@ -25,7 +45,7 @@ function roasColor(v: number) {
 }
 
 export function ChannelTable({ results }: Props) {
-  const { roas, contributions, adstock } = results
+  const { roas, contributions, adstock, contribution_intervals } = results
   const channels   = Object.keys(roas).sort((a, b) => roas[b] - roas[a])
   const maxContrib = Math.max(...channels.map(ch => contributions[ch] ?? 0))
 
@@ -67,11 +87,17 @@ export function ChannelTable({ results }: Props) {
           const barWidth   = maxContrib > 0 ? ((contributions[ch] ?? 0) / maxContrib) * 100 : 0
           const color      = getColor(ch)
 
+          const role = getRole(ch)
+          const interval = contribution_intervals?.[ch]
+          const intervalStr = interval
+            ? `± ${((interval.upper - interval.lower) / 2 * 100).toFixed(1)}%`
+            : null
+
           return (
             <div key={ch} style={{ padding: '12px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                 {/* Left: rank + color + name */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{
                     fontSize: 10, color: 'rgba(238,238,245,.2)',
                     fontFamily: 'var(--font-geist-mono), monospace', width: 14,
@@ -90,6 +116,18 @@ export function ChannelTable({ results }: Props) {
                   }}>
                     {name}
                   </span>
+                  {role && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 600,
+                      color: role.color, opacity: 0.7,
+                      border: `1px solid ${role.color}30`,
+                      background: `${role.color}0f`,
+                      borderRadius: 99, padding: '2px 7px',
+                      letterSpacing: '.03em',
+                    }}>
+                      {role.label}
+                    </span>
+                  )}
                   {adstockVal > 0 && (
                     <span style={{
                       fontSize: 10, color: 'rgba(238,238,245,.25)',
@@ -109,13 +147,23 @@ export function ChannelTable({ results }: Props) {
                   }}>
                     {roasVal.toFixed(2)}x
                   </span>
-                  <span style={{
-                    fontSize: 13, color: 'rgba(238,238,245,.45)',
-                    fontFamily: 'var(--font-geist-mono), monospace',
-                    width: 48, textAlign: 'right',
-                  }}>
-                    {contrib.toFixed(1)}%
-                  </span>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{
+                      fontSize: 13, color: 'rgba(238,238,245,.45)',
+                      fontFamily: 'var(--font-geist-mono), monospace',
+                      display: 'block',
+                    }}>
+                      {contrib.toFixed(1)}%
+                    </span>
+                    {intervalStr && (
+                      <span style={{
+                        fontSize: 10, color: 'rgba(238,238,245,.2)',
+                        fontFamily: 'var(--font-geist-mono), monospace',
+                      }}>
+                        {intervalStr}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

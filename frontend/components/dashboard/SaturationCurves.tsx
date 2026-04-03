@@ -66,6 +66,22 @@ export function SaturationCurves({ saturation, channels }: Props) {
                       style={{ backgroundColor: color }}
                     />
                     <span className="text-xs font-medium capitalize">{name}</span>
+                    {satPoint && (() => {
+                      const ratio = currentSpend / satPoint.x
+                      const saturated = ratio >= 0.85
+                      return (
+                        <span style={{
+                          fontSize: 10, fontWeight: 700,
+                          borderRadius: 99, padding: '2px 8px',
+                          letterSpacing: '.04em',
+                          color: saturated ? '#fb923c' : '#34d399',
+                          border: `1px solid ${saturated ? '#fb923c40' : '#34d39940'}`,
+                          background: saturated ? '#fb923c12' : '#34d39912',
+                        }}>
+                          {saturated ? 'Saturado' : 'Pode escalar'}
+                        </span>
+                      )
+                    })()}
                   </div>
                   {satPoint && (
                     <span className="text-xs text-muted-foreground">

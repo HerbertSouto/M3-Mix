@@ -15,22 +15,35 @@ router = APIRouter()
 def _run_analysis(analysis_id: str, csv_url: str, channels: list[str]):
     logger.info("[%s] analysis started", analysis_id)
     try:
-        # 1. Download CSV
-        logger.info("[%s] downloading csv: %s", analysis_id, csv_url)
+        # 1. Download file (CSV or XLSX)
+        logger.info("[%s] downloading file: %s", analysis_id, csv_url)
         update_analysis_status(analysis_id, "processing", step="downloading")
-        csv_bytes = download_csv(csv_url)
-        df = pd.read_csv(io.BytesIO(csv_bytes), parse_dates=["date"])
-        logger.info("[%s] csv loaded — shape=%s  columns=%s", analysis_id, df.shape, list(df.columns))
+        file_bytes = download_csv(csv_url)
+        if csv_url.endswith('.xlsx'):
+            # Prefer sheet named 'dataset', otherwise first sheet
+            xl = pd.ExcelFile(io.BytesIO(file_bytes))
+            sheet = 'dataset' if 'dataset' in xl.sheet_names else xl.sheet_names[0]
+            df = xl.parse(sheet, parse_dates=["date"])
+        else:
+            df = pd.read_csv(io.BytesIO(file_bytes), parse_dates=["date"])
+        logger.info("[%s] file loaded — shape=%s  columns=%s", analysis_id, df.shape, list(df.columns))
+
+        # Auto-detect control columns (not date, revenue, or _spend)
+        control_columns = [
+            c for c in df.columns
+            if c not in ("date", "revenue") and not c.endswith("_spend")
+        ]
+        logger.info("[%s] control columns: %s", analysis_id, control_columns)
 
         # 2. Fit MMM
         logger.info("[%s] fitting MMM", analysis_id)
         update_analysis_status(analysis_id, "processing", step="fitting")
-        model = mmm_service.fit_mmm(df, channels)
+        model = mmm_service.fit_mmm(df, channels, control_columns=control_columns)
 
         # 3. Extract results
         logger.info("[%s] extracting results", analysis_id)
         update_analysis_status(analysis_id, "processing", step="extracting")
-        results = mmm_service.extract_results(model, df, channels)
+        results = mmm_service.extract_results(model, df, channels, control_columns=control_columns)
 
         # 4. Budget optimizer
         logger.info("[%s] optimizing budget", analysis_id)

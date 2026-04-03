@@ -12,6 +12,9 @@ interface Props {
 
 export function CsvPreview({ headers, onAnalyze, loading }: Props) {
   const detectedChannels = headers.filter(h => h.endsWith('_spend'))
+  const controlColumns = headers.filter(h =>
+    !h.endsWith('_spend') && h !== 'date' && h !== 'revenue'
+  )
   const [selected, setSelected] = useState<string[]>(detectedChannels)
 
   const toggle = (ch: string) =>
@@ -22,35 +25,31 @@ export function CsvPreview({ headers, onAnalyze, loading }: Props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-      {/* Column tags */}
+      {/* Channel columns */}
       <div>
         <p style={{
           fontSize: 10, color: 'rgba(238,238,245,.35)',
           letterSpacing: '.07em', fontWeight: 600,
           textTransform: 'uppercase', marginBottom: 10,
         }}>
-          Colunas detectadas
+          Canais de mídia
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {headers.map(h => {
-            const isChannel = h.endsWith('_spend')
+          {detectedChannels.map(h => {
             const isSelected = selected.includes(h)
             return (
               <button
                 key={h}
-                onClick={() => isChannel && toggle(h)}
+                onClick={() => toggle(h)}
                 style={{
-                  border: `1px solid ${
-                    isSelected ? `${ACCENT}70` : 'rgba(238,238,245,.1)'
-                  }`,
+                  border: `1px solid ${isSelected ? `${ACCENT}70` : 'rgba(238,238,245,.1)'}`,
                   borderRadius: 6,
                   padding: '4px 10px',
                   fontSize: 11,
                   fontFamily: 'var(--font-geist-mono), monospace',
                   color: isSelected ? ACCENT : 'rgba(238,238,245,.4)',
                   background: isSelected ? `${ACCENT}0f` : 'rgba(238,238,245,.03)',
-                  cursor: isChannel ? 'pointer' : 'default',
-                  opacity: isChannel ? 1 : 0.4,
+                  cursor: 'pointer',
                   transition: 'all .15s',
                 }}
               >
@@ -59,14 +58,44 @@ export function CsvPreview({ headers, onAnalyze, loading }: Props) {
             )
           })}
         </div>
-        <p style={{
-          fontSize: 11, color: 'rgba(238,238,245,.25)',
-          marginTop: 8,
-        }}>
-          {selected.length} canal{selected.length !== 1 ? 'is' : ''} selecionado{selected.length !== 1 ? 's' : ''}
-          {' '}para análise
+        <p style={{ fontSize: 11, color: 'rgba(238,238,245,.25)', marginTop: 8 }}>
+          {selected.length} canal{selected.length !== 1 ? 'is' : ''} selecionado{selected.length !== 1 ? 's' : ''} para análise
         </p>
       </div>
+
+      {/* Control variables */}
+      {controlColumns.length > 0 && (
+        <div>
+          <p style={{
+            fontSize: 10, color: 'rgba(238,238,245,.35)',
+            letterSpacing: '.07em', fontWeight: 600,
+            textTransform: 'uppercase', marginBottom: 10,
+          }}>
+            Variáveis de controle detectadas
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {controlColumns.map(h => (
+              <span
+                key={h}
+                style={{
+                  border: '1px solid rgba(99,102,241,.3)',
+                  borderRadius: 6,
+                  padding: '4px 10px',
+                  fontSize: 11,
+                  fontFamily: 'var(--font-geist-mono), monospace',
+                  color: 'rgba(165,180,252,.7)',
+                  background: 'rgba(99,102,241,.06)',
+                }}
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(238,238,245,.2)', marginTop: 8 }}>
+            Usadas automaticamente para isolar o efeito real da mídia
+          </p>
+        </div>
+      )}
 
       {/* CTA button */}
       <button

@@ -78,11 +78,7 @@ export function StatusPoller({ analysisId }: Props) {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       justifyContent: 'center', padding: '48px 24px',
     }}>
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-        @keyframes spin  { to{transform:rotate(360deg)} }
-        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
-      `}</style>
+
 
       {/* Background dot grid */}
       <div style={{

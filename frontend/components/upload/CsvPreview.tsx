@@ -137,7 +137,6 @@ export function CsvPreview({ headers, onAnalyze, loading }: Props) {
           'Rodar análise MMM →'
         )}
       </button>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   )
 }

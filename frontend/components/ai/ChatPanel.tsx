@@ -210,12 +210,6 @@ export function ChatPanel({ analysisId, analysisContext }: Props) {
         </button>
       </div>
 
-      <style>{`
-        @keyframes bounce {
-          from { transform: translateY(0) }
-          to   { transform: translateY(-4px) }
-        }
-      `}</style>
     </div>
   )
 }

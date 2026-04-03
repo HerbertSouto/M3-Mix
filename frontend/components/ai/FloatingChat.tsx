@@ -120,7 +120,7 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
               <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c, opacity: .5 }}/>
             ))}
             <span style={{ fontSize: 10, color: 'rgba(238,238,245,.3)', letterSpacing: '.07em', fontWeight: 600, marginLeft: 4 }}>
-              COPILOT MMM
+              M3 ASSISTENTE
             </span>
           </div>
           <button

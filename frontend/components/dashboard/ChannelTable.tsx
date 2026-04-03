@@ -50,6 +50,39 @@ export function ChannelTable({ results }: Props) {
   const maxContrib = Math.max(...channels.map(ch => contributions[ch] ?? 0))
 
   return (
+    <div>
+      {/* Role legend — above card */}
+      <div style={{
+        display: 'flex', gap: 20, flexWrap: 'wrap',
+        marginBottom: 12,
+      }}>
+        {[
+          {
+            color: '#8b5cf6',
+            label: 'Geração de demanda',
+            desc: 'cria interesse e intenção de compra (TV, Social, Display)',
+          },
+          {
+            color: '#10b981',
+            label: 'Captura de demanda',
+            desc: 'intercepta quem já quer comprar (Search, SEM)',
+          },
+        ].map(({ color, label, desc }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'baseline', gap: 7, flexWrap: 'wrap' }}>
+            <span style={{
+              fontSize: 10, fontWeight: 600,
+              color, border: `1px solid ${color}30`,
+              background: `${color}0f`,
+              borderRadius: 99, padding: '1px 7px',
+              letterSpacing: '.03em', whiteSpace: 'nowrap',
+            }}>{label}</span>
+            <span style={{
+              fontSize: 11, color: 'rgba(238,238,245,.28)', lineHeight: 1.5,
+            }}>{desc}</span>
+          </div>
+        ))}
+      </div>
+
     <div style={{
       border: '1px solid rgba(238,238,245,.08)',
       borderRadius: 14,
@@ -186,6 +219,7 @@ export function ChannelTable({ results }: Props) {
           )
         })}
       </div>
+    </div>
     </div>
   )
 }

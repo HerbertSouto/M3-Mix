@@ -53,10 +53,11 @@ export function UploadZone({ onFile }: Props) {
       }`}
     >
       <p className="text-muted-foreground mb-4">Arraste um arquivo CSV ou XLSX aqui</p>
-      <p className="text-xs text-muted-foreground mb-6">
-        Colunas obrigatórias: <code className="bg-muted px-1 rounded">date</code>,{' '}
-        <code className="bg-muted px-1 rounded">revenue</code>, e pelo menos um canal{' '}
-        <code className="bg-muted px-1 rounded">*_spend</code>
+      <p className="text-xs text-muted-foreground mb-6" style={{maxWidth:380,margin:'0 auto 20px',lineHeight:1.7}}>
+        O arquivo precisa ter uma coluna <code className="bg-muted px-1 rounded">date</code> (semana),{' '}
+        <code className="bg-muted px-1 rounded">revenue</code> (receita da semana em R$) e pelo menos
+        um canal de mídia com sufixo <code className="bg-muted px-1 rounded">_spend</code>{' '}
+        — como <code className="bg-muted px-1 rounded">tv_spend</code> ou <code className="bg-muted px-1 rounded">search_spend</code>.
       </p>
       <label className="cursor-pointer">
         <Button variant="outline" type="button" onClick={(e) => {

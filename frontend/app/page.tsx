@@ -250,20 +250,32 @@ export default function HomePage() {
           {!file&&(
             <div style={{
               borderTop:'1px solid rgba(238,238,245,.05)',
-              padding:'9px 18px',
-              display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',
+              padding:'14px 18px',
+              display:'flex',flexDirection:'column',gap:10,
             }}>
-              <span style={{fontSize:10,color:'rgba(238,238,245,.2)',marginRight:4}}>colunas:</span>
-              {['date','revenue','*_spend'].map(col=>(
-                <code key={col} style={{
-                  fontSize:10,color:'rgba(238,238,245,.4)',
-                  background:'rgba(238,238,245,.05)',
-                  border:'1px solid rgba(238,238,245,.07)',
-                  borderRadius:4,padding:'2px 7px',
-                }}>
-                  {col}
-                </code>
-              ))}
+              <p style={{fontSize:10,color:'rgba(238,238,245,.2)',letterSpacing:'.06em',fontWeight:600,textTransform:'uppercase'}}>
+                Colunas necessárias no arquivo
+              </p>
+              <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                {[
+                  { col:'date',       desc:'Data de cada semana — formato AAAA-MM-DD (ex: 2024-01-07)' },
+                  { col:'revenue',    desc:'Receita total gerada naquela semana (em R$)' },
+                  { col:'tv_spend',   desc:'Investimento em cada canal de mídia — o sufixo _spend é obrigatório (ex: tv_spend, search_spend, social_spend)' },
+                ].map(({col,desc})=>(
+                  <div key={col} style={{display:'flex',alignItems:'baseline',gap:10,flexWrap:'wrap'}}>
+                    <code style={{
+                      fontSize:10,color:'rgba(238,238,245,.5)',flexShrink:0,
+                      background:'rgba(238,238,245,.05)',
+                      border:'1px solid rgba(238,238,245,.07)',
+                      borderRadius:4,padding:'2px 7px',
+                    }}>{col}</code>
+                    <span style={{fontSize:11,color:'rgba(238,238,245,.3)',lineHeight:1.5}}>{desc}</span>
+                  </div>
+                ))}
+              </div>
+              <p style={{fontSize:10,color:'rgba(238,238,245,.18)',lineHeight:1.5,marginTop:2}}>
+                Outras colunas (promoção, sazonalidade, preço) são detectadas automaticamente como variáveis de controle.
+              </p>
             </div>
           )}
         </div>

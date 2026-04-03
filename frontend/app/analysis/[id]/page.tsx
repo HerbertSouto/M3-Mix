@@ -6,7 +6,7 @@ import { DecompositionChart } from '@/components/dashboard/DecompositionChart'
 import { ChannelTable } from '@/components/dashboard/ChannelTable'
 import { SaturationCurves } from '@/components/dashboard/SaturationCurves'
 import { NarrativePanel } from '@/components/ai/NarrativePanel'
-import { ChatPanel } from '@/components/ai/ChatPanel'
+import { FloatingChat } from '@/components/ai/FloatingChat'
 import { AnalysisResults } from '@/lib/types'
 import Link from 'next/link'
 
@@ -227,27 +227,20 @@ export default async function AnalysisPage({ params }: Props) {
           />
         </section>
 
-        {/* 6. Chat */}
-        <section>
-          <SectionHeader
-            title="Pergunte ao Copilot"
-            sub="Tem dúvidas sobre os resultados? O assistente conhece toda a sua análise e pode responder em linguagem simples."
-          />
-          <ChatPanel
-            analysisId={id}
-            analysisContext={{
-              roas: typedResults.roas,
-              contributions: typedResults.contributions,
-              adstock: typedResults.adstock,
-              budget_recommendation: typedResults.budget_recommendation,
-              saturation: saturationSummary,
-              decomposition_por_canal: decompositionSummary,
-              relatorio_ia: typedResults.ai_narrative,
-            }}
-          />
-        </section>
-
       </main>
+
+      <FloatingChat
+        analysisId={id}
+        analysisContext={{
+          roas: typedResults.roas,
+          contributions: typedResults.contributions,
+          adstock: typedResults.adstock,
+          budget_recommendation: typedResults.budget_recommendation,
+          saturation: saturationSummary,
+          decomposition_por_canal: decompositionSummary,
+          relatorio_ia: typedResults.ai_narrative,
+        }}
+      />
     </div>
   )
 }

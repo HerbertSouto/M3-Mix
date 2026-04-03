@@ -55,7 +55,7 @@ def generate_narrative(analysis_results: dict) -> str:
     sat_data = _saturation_summary(saturation)
     uplift = budget_rec.get("uplift_percent", 0)
 
-    prompt = f"""Você é um analista sênior de Marketing Mix Modeling. Escreva um relatório executivo em português do Brasil com exatamente 4 seções abaixo. Use os dados fornecidos — nunca invente números.
+    prompt = f"""Você é um consultor sênior de Marketing Mix Modeling. Escreva um relatório executivo em português do Brasil com exatamente 4 seções. Use APENAS os dados fornecidos — nunca invente números.
 
 ## DADOS DA ANÁLISE
 
@@ -71,21 +71,37 @@ Saturação por canal:
 
 Potencial de uplift com redistribuição de budget: {uplift:.1f}%
 
-## ESTRUTURA DO RELATÓRIO (siga exatamente)
+## REGRAS OBRIGATÓRIAS
+
+1. NUNCA escreva frases genéricas como "aumentar investimento em mídia social". Toda frase deve ter número, comparação e justificativa.
+   ❌ "Social apresenta bom ROAS."
+   ✅ "Social apresenta ROAS de 3.0x — 32% acima do Search — e ainda não atingiu saturação, indicando espaço real para escalar com retorno positivo."
+
+2. Para cada canal, conecte SEMPRE as três dimensões juntas: ROAS + contribuição + saturação.
+   ✅ "Apesar do ROAS elevado (X.Xx), a contribuição de Y% indica que o canal opera em escala limitada. Como ainda não está saturado, há espaço para crescimento."
+
+3. Canais de captura de demanda (Search/SEM) devem ser explicados como tal.
+   ✅ "Search captura demanda já existente, o que explica sua alta eficiência, mas limita seu crescimento sem canais de awareness que gerem volume de intenção."
+
+4. Saturação deve virar uma decisão clara — não apenas uma observação.
+   ❌ "TV está próxima da saturação."
+   ✅ "TV apresenta retorno marginal baixo e sinais claros de saturação. Recomenda-se evitar qualquer aumento de investimento neste canal."
+
+5. Cada recomendação deve responder "então o que eu faço?" com um verbo de ação claro: aumentar / manter / reduzir / realocar.
+
+## ESTRUTURA (siga exatamente, use ## para cada seção)
 
 ## Situação
-(1 parágrafo) Descreva a situação geral: ROAS médio, quanto da receita vem de mídia vs orgânico, e o que isso significa para o negócio.
+1 parágrafo. ROAS médio com contexto, proporção mídia vs orgânico e o que isso implica para a dependência do negócio em mídia paga.
 
 ## Diagnóstico por canal
-(lista numerada, 1 item por canal) Para cada canal: ROAS + contribuição + se está saturado ou pode escalar. Conecte eficiência com volume — canal eficiente com baixa contribuição é diferente de canal com alto volume.
+Lista numerada. 1 item por canal com as 3 dimensões conectadas (ROAS + contribuição + saturação). Compare canais entre si com percentuais.
 
 ## Interpretação
-(1 parágrafo) Explique o papel de cada canal na estratégia: quem gera demanda (TV/Social) vs quem captura (Search). Como eles se complementam. Por que canais de captura tendem a ter ROAS maior mas dependem dos canais de awareness para ter volume.
+1 parágrafo. Explique como os canais se complementam: awareness (TV/Social) gera intenção que o Search captura. Por que ROAS alto em Search é esperado e limitado ao mesmo tempo. Qual é o risco de cortar awareness.
 
 ## Ação recomendada
-(lista numerada, 3 ações) O que aumentar, manter e reduzir — com justificativa baseada em ROAS + saturação. Se houver uplift possível com redistribuição, mencione.
-
-Seja direto. Linguagem de negócios. Sem introduções ou conclusões fora das seções."""
+Lista numerada com exatamente 1 ação por canal. Formato: [Canal]: [verbo] — [justificativa com número]. Se houver uplift possível com redistribuição, mencione no final."""
 
     response = get_client().chat.completions.create(
         model="llama-3.3-70b-versatile",

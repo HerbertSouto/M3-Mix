@@ -11,18 +11,21 @@ with warnings.catch_warnings():
 def fit_mmm(
     df: pd.DataFrame,
     channel_columns: list[str],
-    draws: int = 1000,
-    tune: int = 1000,
+    control_columns: list[str] | None = None,
+    draws: int = 500,
+    tune: int = 500,
     target_accept: float = 0.9,
 ) -> MMM:
     """Fit a Bayesian MMM and return the fitted model."""
+    controls = control_columns or []
     mmm = MMM(
         adstock=GeometricAdstock(l_max=8),
         saturation=LogisticSaturation(),
         date_column="date",
         channel_columns=channel_columns,
+        control_columns=controls if controls else None,
     )
-    X = df[["date"] + channel_columns]
+    X = df[["date"] + channel_columns + controls]
     y = df["revenue"]
     mmm.fit(
         X,
@@ -31,6 +34,8 @@ def fit_mmm(
         tune=tune,
         target_accept=target_accept,
         progressbar=False,
+        chains=2,
+        cores=1,  # single-process — avoids broken pipe on Windows/FastAPI threads
     )
     return mmm
 
@@ -39,6 +44,7 @@ def extract_results(
     mmm: MMM,
     df: pd.DataFrame,
     channel_columns: list[str],
+    control_columns: list[str] | None = None,
 ) -> dict:
     """Extract structured results from a fitted MMM model."""
 
@@ -61,28 +67,59 @@ def extract_results(
     channels_total = sum(contributions.values())
     contributions["baseline"] = max(0.0, 1.0 - channels_total)
 
-    # --- Adstock alpha from recovered transformation parameters ---
-    params = mmm.format_recovered_transformation_parameters(quantile=0.5)
+    # --- Contribution credible intervals (5th–95th percentile) ---
+    contribution_intervals: dict[str, dict] = {}
+    try:
+        idata = mmm.idata
+        beta_samples = idata.posterior["beta_channel"]  # (chain, draw, channel)
+        for ch in channel_columns:
+            betas = beta_samples.sel(channel=ch).values.flatten()
+            median_beta = float(np.median(betas))
+            if median_beta > 0 and ch in contributions_df.columns:
+                mean_contrib = float(contributions_df[ch].sum()) / total_revenue
+                q5_ratio  = float(np.percentile(betas,  5)) / median_beta
+                q95_ratio = float(np.percentile(betas, 95)) / median_beta
+                contribution_intervals[ch] = {
+                    "mean":  mean_contrib,
+                    "lower": max(0.0, mean_contrib * q5_ratio),
+                    "upper": min(1.0, mean_contrib * q95_ratio),
+                }
+    except Exception:
+        pass  # intervals are optional — silently skip if unavailable
+
+    # --- Adstock alpha from posterior samples ---
     adstock: dict[str, float] = {}
-    for ch in channel_columns:
-        ch_params = params.get(ch, {})
-        adstock_params = ch_params.get("adstock", {})
-        adstock[ch] = float(adstock_params.get("alpha", 0.0))
+    try:
+        params = mmm.format_recovered_transformation_parameters(quantile=0.5)
+        for ch in channel_columns:
+            ch_params = params.get(ch, {})
+            adstock_params = ch_params.get("adstock", {})
+            adstock[ch] = float(adstock_params.get("alpha", 0.0))
+    except (AttributeError, TypeError):
+        # Fallback: read alpha directly from the InferenceData posterior
+        try:
+            idata = mmm.idata
+            for ch in channel_columns:
+                alpha_key = f"{ch}_adstock_alpha"
+                if alpha_key in idata.posterior:
+                    adstock[ch] = float(idata.posterior[alpha_key].mean().values)
+                else:
+                    adstock[ch] = 0.0
+        except Exception:
+            adstock = {ch: 0.0 for ch in channel_columns}
 
     # --- Saturation curves ---
     saturation: dict[str, list[dict[str, float]]] = {}
     for ch in channel_columns:
         max_spend = float(df[ch].max())
-        grid = mmm.get_channel_contribution_forward_pass_grid(
-            start=0.0,
-            stop=max_spend * 1.5,
-            num=50,
-        )
-        # grid is xarray DataArray with dims (chain, draw, date, channel, spend)
-        # mean over chain/draw/date, select channel
+        spend_values = np.linspace(0, max_spend * 1.5, 50)
         try:
+            grid = mmm.get_channel_contribution_forward_pass_grid(
+                start=0.0,
+                stop=max_spend * 1.5,
+                num=50,
+            )
             ch_grid = grid.mean(["chain", "draw", "date"]).sel(channel=ch)
-            spend_values = np.linspace(0, max_spend * 1.5, 50)
             y_values = ch_grid.values.flatten()
             max_y = float(y_values.max()) if y_values.max() > 0 else 1.0
             saturation[ch] = [
@@ -90,8 +127,7 @@ def extract_results(
                 for x, y in zip(spend_values, y_values)
             ]
         except Exception:
-            # Fallback: simple logistic curve using adstock alpha
-            spend_values = np.linspace(0, max_spend * 1.5, 50)
+            # Fallback: simple exponential saturation curve
             lam = 1.0 / (max_spend * 0.5) if max_spend > 0 else 1.0
             saturation[ch] = [
                 {"x": float(x), "y": float(1 - np.exp(-lam * x))}
@@ -122,6 +158,7 @@ def extract_results(
     return {
         "roas": roas,
         "contributions": contributions,
+        "contribution_intervals": contribution_intervals,
         "adstock": adstock,
         "saturation": saturation,
         "decomposition": decomposition,

@@ -1,8 +1,19 @@
+import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=__file__.replace("main.py", "") + "../.env")
+
+# Must be set before pytensor is imported (happens via routers → mmm.py)
+# .env takes precedence (base_compiledir); this is the safe fallback for envs without .env
+os.environ.setdefault("PYTENSOR_FLAGS", "base_compiledir=C:/Users/herbe/AppData/Local/pytensor_cache")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
 
 from routers import analyze, optimize, chat
 

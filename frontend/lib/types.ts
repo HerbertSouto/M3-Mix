@@ -28,11 +28,18 @@ export interface BudgetRecommendation {
   uplift_percent: number
 }
 
+export interface ContributionInterval {
+  mean: number
+  lower: number
+  upper: number
+}
+
 export interface AnalysisResults {
   id: string
   analysis_id: string
   roas: Record<string, number>
   contributions: Record<string, number>
+  contribution_intervals?: Record<string, ContributionInterval>
   saturation: Record<string, SaturationPoint[]>
   adstock: Record<string, number>
   decomposition: DecompositionPoint[]

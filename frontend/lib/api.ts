@@ -7,7 +7,7 @@ export async function uploadCsv(file: File, channels: string[]): Promise<{ analy
   return res.json()
 }
 
-export async function getAnalysisStatus(id: string): Promise<{ status: string }> {
+export async function getAnalysisStatus(id: string): Promise<{ status: string; step: string | null }> {
   const res = await fetch(`/api/analysis/${id}/status`)
   if (!res.ok) throw new Error('Failed to fetch status')
   return res.json()

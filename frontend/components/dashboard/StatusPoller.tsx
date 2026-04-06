@@ -1,115 +1,258 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getAnalysisStatus } from '@/lib/api'
 
-const STEPS = [
-  { label: 'Carregando dados', duration: 8 },
-  { label: 'Ajustando adstock e saturação', duration: 20 },
-  { label: 'Amostrando distribuições posteriores (MCMC)', duration: 60 },
-  { label: 'Calculando ROAS e contribuições', duration: 15 },
-  { label: 'Gerando insights com IA', duration: 10 },
-]
+const ACCENT = '#e4ff1a'
+const BG     = '#07070f'
+const SYNE   = 'var(--font-syne), sans-serif'
 
-interface Props {
-  analysisId: string
+const STEPS = [
+  { key: 'downloading', label: 'Baixando CSV',         detail: 'Buscando arquivo do storage' },
+  { key: 'fitting',     label: 'Ajustando modelo MMM', detail: 'Amostrando distribuições posteriores via MCMC' },
+  { key: 'extracting',  label: 'Extraindo resultados', detail: 'Calculando ROAS, contribuições e curvas de saturação' },
+  { key: 'optimizing',  label: 'Otimizando budget',    detail: 'Encontrando alocação ideal de investimento' },
+  { key: 'narrative',   label: 'Gerando análise IA',   detail: 'Escrevendo relatório executivo com inteligência artificial' },
+  { key: 'saving',      label: 'Salvando resultados',  detail: 'Persistindo dados no banco' },
+] as const
+
+function getStepIndex(step: string | null) {
+  if (!step) return -1
+  return STEPS.findIndex(s => s.key === step)
 }
+
+function fmtTime(s: number) {
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+interface Props { analysisId: string }
 
 export function StatusPoller({ analysisId }: Props) {
   const router = useRouter()
-  const [elapsed, setElapsed] = useState(0)
-
-  useEffect(() => {
-    const tick = setInterval(() => setElapsed(s => s + 1), 1000)
-    return () => clearInterval(tick)
-  }, [])
+  const [currentStep, setCurrentStep] = useState<string | null>(null)
+  const [elapsed, setElapsed]         = useState(0)
+  const elapsedRef                    = useRef(0)
+  const [logs, setLogs]               = useState<{ time: number; message: string }[]>([])
+  const logEndRef                     = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const { status } = await getAnalysisStatus(analysisId)
-        if (status === 'completed' || status === 'failed') {
-          clearInterval(interval)
-          router.refresh()
+        const { status, step } = await getAnalysisStatus(analysisId)
+        if (step && step !== currentStep) {
+          setCurrentStep(step)
+          const def = STEPS.find(s => s.key === step)
+          if (def) setLogs(prev => [...prev, { time: elapsedRef.current, message: def.label }])
         }
-      } catch {
-        // keep polling
-      }
-    }, 3000)
+        if (status === 'completed') {
+          clearInterval(interval)
+          setLogs(prev => [...prev, { time: elapsedRef.current, message: '✓ Análise concluída' }])
+          setTimeout(() => router.refresh(), 600)
+        } else if (status === 'failed') {
+          clearInterval(interval)
+          setLogs(prev => [...prev, { time: elapsedRef.current, message: '✗ Erro na análise' }])
+          setTimeout(() => router.refresh(), 1200)
+        }
+      } catch { /* keep polling */ }
+    }, 2000)
     return () => clearInterval(interval)
-  }, [analysisId, router])
+  }, [analysisId, router, currentStep])
 
-  // Determine current step based on elapsed time
-  let acc = 0
-  let currentStep = 0
-  for (let i = 0; i < STEPS.length; i++) {
-    acc += STEPS[i].duration
-    if (elapsed < acc) { currentStep = i; break }
-    currentStep = STEPS.length - 1
-  }
+  useEffect(() => {
+    const t = setInterval(() => {
+      elapsedRef.current += 1
+      setElapsed(e => e + 1)
+    }, 1000)
+    return () => clearInterval(t)
+  }, [])
 
-  // Progress within the total estimated time
-  const totalDuration = STEPS.reduce((s, st) => s + st.duration, 0)
-  const progress = Math.min((elapsed / totalDuration) * 100, 95)
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [logs])
+
+  const activeIndex = getStepIndex(currentStep)
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8">
-      {/* Animated orb */}
-      <div className="relative w-24 h-24">
-        <div className="absolute inset-0 rounded-full bg-foreground/5 animate-ping" style={{ animationDuration: '2s' }} />
-        <div className="absolute inset-2 rounded-full bg-foreground/10 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.3s' }} />
-        <div className="absolute inset-4 rounded-full bg-foreground/15 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.6s' }} />
-        <div className="absolute inset-6 rounded-full bg-foreground flex items-center justify-center">
-          <svg className="w-5 h-5 text-background animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-          </svg>
-        </div>
-      </div>
+    <div className="dark" style={{
+      minHeight: '100vh', background: BG, color: '#eeeef5',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: 'center', padding: '48px 24px',
+    }}>
 
-      <div className="w-full max-w-sm space-y-6 text-center">
-        <div>
-          <h2 className="font-semibold text-lg">Rodando análise MMM</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {STEPS[currentStep].label}
-            <span className="inline-flex gap-0.5 ml-1">
-              <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
-              <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
-              <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
-            </span>
+
+      {/* Background dot grid */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(circle,rgba(238,238,245,.045) 1px,transparent 1px)',
+        backgroundSize: '28px 28px',
+      }}/>
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none',
+        background: `radial-gradient(ellipse 60% 35% at 50% 0%,${ACCENT}10 0%,transparent 70%)`,
+      }}/>
+
+      {/* Content */}
+      <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: 520 }}>
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          {/* Spinner ring */}
+          <div style={{
+            width: 48, height: 48,
+            border: `2px solid rgba(238,238,245,.07)`,
+            borderTopColor: ACCENT,
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px',
+          }}/>
+          <h2 style={{
+            fontFamily: SYNE, fontWeight: 800,
+            fontSize: 22, letterSpacing: '-.02em', marginBottom: 6,
+          }}>
+            Rodando análise MMM
+          </h2>
+          <p style={{
+            fontSize: 12, color: 'rgba(238,238,245,.3)',
+            fontFamily: 'var(--font-geist-mono), monospace',
+          }}>
+            {fmtTime(elapsed)} decorrido
           </p>
         </div>
 
-        {/* Progress bar */}
-        <div className="space-y-2">
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-            <div
-              className="h-full bg-foreground rounded-full transition-all duration-1000 ease-linear"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">{Math.round(progress)}%</p>
-        </div>
-
-        {/* Steps list */}
-        <div className="space-y-2 text-left">
+        {/* Steps */}
+        <div style={{ marginBottom: 32 }}>
           {STEPS.map((step, i) => {
-            const isDone = i < currentStep
-            const isActive = i === currentStep
+            const isDone    = activeIndex > i
+            const isActive  = activeIndex === i
+            const isPending = activeIndex < i
+
             return (
-              <div key={i} className={`flex items-center gap-2 text-xs transition-opacity ${isActive ? 'opacity-100' : isDone ? 'opacity-40' : 'opacity-20'}`}>
-                <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 ${isDone ? 'bg-foreground' : isActive ? 'border-2 border-foreground' : 'border border-muted-foreground'}`}>
-                  {isDone && (
-                    <svg className="w-2 h-2 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
+              <div key={step.key} style={{ display: 'flex', gap: 14 }}>
+                {/* Indicator column */}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 11, fontWeight: 700, fontFamily: SYNE,
+                    flexShrink: 0,
+                    border: `1.5px solid ${
+                      isDone   ? '#34d399' :
+                      isActive ? ACCENT :
+                      'rgba(238,238,245,.1)'
+                    }`,
+                    background: isDone
+                      ? 'rgba(52,211,153,.12)'
+                      : isActive
+                        ? `${ACCENT}15`
+                        : 'transparent',
+                    color: isDone
+                      ? '#34d399'
+                      : isActive
+                        ? ACCENT
+                        : 'rgba(238,238,245,.2)',
+                    transition: 'all .4s',
+                    ...(isActive ? { animation: 'pulse 2s ease infinite' } : {}),
+                  }}>
+                    {isDone ? (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="#34d399" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    ) : (
+                      i + 1
+                    )}
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div style={{
+                      width: 1, height: 28, flexShrink: 0,
+                      background: isDone ? '#34d39940' : 'rgba(238,238,245,.06)',
+                      transition: 'background .4s',
+                    }}/>
                   )}
                 </div>
-                <span className={isActive ? 'font-medium' : ''}>{step.label}</span>
+
+                {/* Text */}
+                <div style={{
+                  paddingTop: 4, paddingBottom: 16,
+                  opacity: isPending ? 0.3 : 1,
+                  transition: 'opacity .3s',
+                }}>
+                  <p style={{
+                    fontSize: 13, fontWeight: isActive ? 600 : 400,
+                    color: isActive ? '#eeeef5' : 'rgba(238,238,245,.55)',
+                    letterSpacing: '-.01em',
+                  }}>
+                    {step.label}
+                  </p>
+                  {isActive && (
+                    <p style={{
+                      fontSize: 11, color: 'rgba(238,238,245,.3)',
+                      marginTop: 2, lineHeight: 1.5,
+                    }}>
+                      {step.detail}
+                    </p>
+                  )}
+                </div>
               </div>
             )
           })}
         </div>
+
+        {/* Terminal log */}
+        <div style={{
+          border: '1px solid rgba(238,238,245,.07)',
+          borderRadius: 10,
+          overflow: 'hidden',
+          background: 'rgba(238,238,245,.02)',
+        }}>
+          {/* Terminal header */}
+          <div style={{
+            borderBottom: '1px solid rgba(238,238,245,.06)',
+            padding: '8px 14px',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            {['#ff5f57','#ffbd2e','#28c840'].map(c => (
+              <div key={c} style={{ width: 8, height: 8, borderRadius: '50%', background: c, opacity: .5 }}/>
+            ))}
+            <span style={{
+              fontSize: 10, color: 'rgba(238,238,245,.25)',
+              letterSpacing: '.06em', fontWeight: 500, marginLeft: 4,
+            }}>
+              LOG DA ANÁLISE
+            </span>
+          </div>
+          <div style={{
+            padding: '12px 14px',
+            maxHeight: 120, overflowY: 'auto',
+            fontFamily: 'var(--font-geist-mono), monospace',
+            fontSize: 11, lineHeight: 1.7,
+          }}>
+            <p style={{ color: 'rgba(238,238,245,.2)' }}>$ m3mix analyze --model bayesian --chains 2</p>
+            {logs.map((log, i) => (
+              <p key={i} style={{ color: 'rgba(238,238,245,.5)' }}>
+                <span style={{ color: ACCENT, opacity: .7 }}>[{fmtTime(log.time)}]</span>
+                {' '}{log.message}
+              </p>
+            ))}
+            {logs.length > 0 && (
+              <span style={{
+                display: 'inline-block', width: 6, height: 12,
+                background: ACCENT, opacity: .7,
+                animation: 'blink 1s step-end infinite', marginLeft: 2,
+              }}/>
+            )}
+            <div ref={logEndRef}/>
+          </div>
+        </div>
+
+        {/* Bottom note */}
+        <p style={{
+          textAlign: 'center', marginTop: 20,
+          fontSize: 11, color: 'rgba(238,238,245,.18)',
+          lineHeight: 1.6,
+        }}>
+          O modelo MCMC pode levar alguns minutos.<br/>
+          Não feche esta janela.
+        </p>
       </div>
     </div>
   )

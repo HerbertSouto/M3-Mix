@@ -18,13 +18,13 @@ export function BudgetSlider({ value, min, max, onChange }: Props) {
         </span>
       </div>
       <Slider
-        value={value}
+        defaultValue={[value]}
         min={min}
         max={max}
-        step={Math.round((max - min) / 100)}
+        step={Math.max(1, Math.round((max - min) / 100))}
         onValueChange={(v) => {
-          const num = Array.isArray(v) ? v[0] : v
-          if (typeof num === 'number') onChange(num)
+          const val = Array.isArray(v) ? v[0] : v
+          if (typeof val === 'number') onChange(val)
         }}
         className="w-full"
       />

@@ -1,5 +1,8 @@
+import logging
 import os
 from supabase import create_client, Client
+
+logger = logging.getLogger(__name__)
 
 _client: Client | None = None
 
@@ -13,15 +16,24 @@ def get_supabase() -> Client:
     return _client
 
 
-def update_analysis_status(analysis_id: str, status: str) -> None:
-    get_supabase().table("analyses").update({"status": status}).eq("id", analysis_id).execute()
+def update_analysis_status(analysis_id: str, status: str, step: str | None = None) -> None:
+    # Direct table UPDATE — avoids RPC auth issues with new sb_secret_ key format
+    result = get_supabase().table("analyses").update(
+        {"status": status, "step": step}
+    ).eq("id", analysis_id).execute()
+    if hasattr(result, "error") and result.error:
+        logger.error("update_analysis_status failed: %s", result.error)
+        raise RuntimeError(f"Supabase update failed: {result.error}")
 
 
 def save_analysis_results(analysis_id: str, results: dict) -> None:
-    get_supabase().table("analysis_results").insert({
+    result = get_supabase().table("analysis_results").insert({
         "analysis_id": analysis_id,
         **results,
     }).execute()
+    if hasattr(result, "error") and result.error:
+        logger.error("save_analysis_results failed: %s", result.error)
+        raise RuntimeError(f"Supabase insert failed: {result.error}")
 
 
 def download_csv(csv_url: str) -> bytes:

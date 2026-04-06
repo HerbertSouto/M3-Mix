@@ -52,6 +52,7 @@ class ChatRequest(BaseModel):
     analysis_id: str
     message: str
     analysis_context: dict[str, Any]
+    session_id: str | None = None
 
 
 class StatusResponse(BaseModel):

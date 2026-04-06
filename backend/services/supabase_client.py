@@ -36,6 +36,21 @@ def save_analysis_results(analysis_id: str, results: dict) -> None:
         raise RuntimeError(f"Supabase insert failed: {result.error}")
 
 
+def check_and_increment_chat_limit(session_id: str, limit: int) -> bool:
+    """Returns True if allowed (under limit), False if blocked. Increments atomically."""
+    client = get_supabase()
+    result = client.table("chat_rate_limits").select("count").eq("session_id", session_id).execute()
+    rows = result.data or []
+    current = rows[0]["count"] if rows else 0
+    if current >= limit:
+        return False
+    if rows:
+        client.table("chat_rate_limits").update({"count": current + 1}).eq("session_id", session_id).execute()
+    else:
+        client.table("chat_rate_limits").insert({"session_id": session_id, "count": 1}).execute()
+    return True
+
+
 def download_csv(csv_url: str) -> bytes:
     """Download CSV from Supabase Storage given full public URL."""
     # URL format: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>

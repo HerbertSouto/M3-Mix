@@ -1,6 +1,16 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 
+function getOrCreateSessionId(): string {
+  const key = 'm3_session_id'
+  let id = localStorage.getItem(key)
+  if (!id) {
+    id = crypto.randomUUID()
+    localStorage.setItem(key, id)
+  }
+  return id
+}
+
 const ACCENT = '#e4ff1a'
 const SYNE   = 'var(--font-syne), sans-serif'
 
@@ -27,8 +37,14 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
   const [input, setInput]       = useState('')
   const [loading, setLoading]   = useState(false)
   const [unread, setUnread]     = useState(0)
+  const [limited, setLimited]   = useState(false)
   const bottomRef               = useRef<HTMLDivElement>(null)
   const inputRef                = useRef<HTMLInputElement>(null)
+  const sessionIdRef            = useRef<string | null>(null)
+
+  useEffect(() => {
+    sessionIdRef.current = getOrCreateSessionId()
+  }, [])
 
   useEffect(() => {
     if (open) {
@@ -58,8 +74,16 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
         analysis_id: analysisId,
         message: msg,
         analysis_context: analysisContext,
+        session_id: sessionIdRef.current,
       }),
     })
+
+    if (res.status === 429) {
+      setLimited(true)
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Você atingiu o limite de mensagens desta sessão.' }])
+      setLoading(false)
+      return
+    }
 
     const reader  = res.body?.getReader()
     const decoder = new TextDecoder()
@@ -197,8 +221,9 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && send()}
-            placeholder="Pergunte sobre a análise..."
+            onKeyDown={e => e.key === 'Enter' && !limited && send()}
+            disabled={limited}
+            placeholder={limited ? 'Limite de mensagens atingido' : 'Pergunte sobre a análise...'}
             style={{
               flex: 1,
               background: 'rgba(238,238,245,.04)',
@@ -209,7 +234,7 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
           />
           <button
             onClick={() => send()}
-            disabled={loading || !input.trim()}
+            disabled={loading || !input.trim() || limited}
             style={{
               background: loading || !input.trim() ? 'rgba(238,238,245,.06)' : ACCENT,
               color: loading || !input.trim() ? 'rgba(238,238,245,.25)' : '#07070f',

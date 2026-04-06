@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=__file__.replace("main.py", "") + "../.env")
 
 from routers import analyze, optimize, chat
 

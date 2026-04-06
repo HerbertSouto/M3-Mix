@@ -1,23 +1,24 @@
 import os
 from typing import Iterator
-import anthropic
+from groq import Groq
 
-_client: anthropic.Anthropic | None = None
+_client: Groq | None = None
 
 
-def get_client() -> anthropic.Anthropic:
+def get_client() -> Groq:
     global _client
     if _client is None:
-        _client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        _client = Groq(api_key=os.environ["GROQ_API_KEY"])
     return _client
+
+
+_MODEL = "llama-3.3-70b-versatile"
 
 
 def generate_narrative(analysis_results: dict) -> str:
     """Generate a one-shot narrative analysis of MMM results."""
     roas = analysis_results["roas"]
     contributions = analysis_results["contributions"]
-
-    low_roas_channels = [ch for ch, v in roas.items() if v < 1.0]
 
     prompt = f"""Você é um analista de marketing especialista em Marketing Mix Modeling.
 Analise os resultados abaixo e produza um relatório executivo em português do Brasil.
@@ -39,12 +40,12 @@ Escreva em 3 seções:
 
 Seja direto e use linguagem de negócios. Não explique o que é MMM."""
 
-    message = get_client().messages.create(
-        model="claude-sonnet-4-6",
+    response = get_client().chat.completions.create(
+        model=_MODEL,
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
     )
-    return message.content[0].text
+    return response.choices[0].message.content
 
 
 def stream_chat(message: str, analysis_context: dict) -> Iterator[str]:
@@ -59,11 +60,16 @@ Resultados da análise:
 
 Responda em português do Brasil. Seja conciso e direto. Use os dados acima para fundamentar suas respostas."""
 
-    with get_client().messages.stream(
-        model="claude-sonnet-4-6",
+    stream = get_client().chat.completions.create(
+        model=_MODEL,
         max_tokens=1024,
-        system=system,
-        messages=[{"role": "user", "content": message}],
-    ) as stream:
-        for text in stream.text_stream:
-            yield text
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": message},
+        ],
+        stream=True,
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            yield delta

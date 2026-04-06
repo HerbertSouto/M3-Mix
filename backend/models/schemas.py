@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Any
+import uuid
 
 
 class AnalyzeRequest(BaseModel):
@@ -53,6 +54,17 @@ class ChatRequest(BaseModel):
     message: str
     analysis_context: dict[str, Any]
     session_id: str | None = None
+
+    @field_validator("session_id")
+    @classmethod
+    def validate_session_id(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        try:
+            uuid.UUID(v, version=4)
+        except ValueError:
+            raise ValueError("session_id must be a valid UUID v4")
+        return v
 
 
 class StatusResponse(BaseModel):

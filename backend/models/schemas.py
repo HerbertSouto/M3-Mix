@@ -3,17 +3,30 @@ from typing import Any
 import uuid
 
 
+def _validate_uuid(v: str) -> str:
+    try:
+        uuid.UUID(v)
+    except ValueError:
+        raise ValueError("must be a valid UUID")
+    return v
+
+
 class AnalyzeRequest(BaseModel):
     analysis_id: str
     csv_url: str
     channels: list[str]
+
+    @field_validator("analysis_id")
+    @classmethod
+    def validate_analysis_id(cls, v: str) -> str:
+        return _validate_uuid(v)
 
 
 class ChannelResult(BaseModel):
     roas: float
     contribution_share: float
     adstock_alpha: float
-    saturation_curve: list[dict[str, float]]  # [{"x": spend, "y": revenue}, ...]
+    saturation_curve: list[dict[str, float]]
 
 
 class DecompositionPoint(BaseModel):
@@ -39,6 +52,11 @@ class OptimizeRequest(BaseModel):
     current_allocation: dict[str, float]
     roas: dict[str, float]
 
+    @field_validator("analysis_id")
+    @classmethod
+    def validate_analysis_id(cls, v: str) -> str:
+        return _validate_uuid(v)
+
 
 class OptimizeResponse(BaseModel):
     analysis_id: str
@@ -54,6 +72,21 @@ class ChatRequest(BaseModel):
     message: str
     analysis_context: dict[str, Any]
     session_id: str | None = None
+
+    @field_validator("analysis_id")
+    @classmethod
+    def validate_analysis_id(cls, v: str) -> str:
+        return _validate_uuid(v)
+
+    @field_validator("message")
+    @classmethod
+    def validate_message(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("message cannot be empty")
+        if len(v) > 2000:
+            raise ValueError("message too long (max 2000 chars)")
+        return v
 
     @field_validator("session_id")
     @classmethod

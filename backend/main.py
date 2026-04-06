@@ -15,16 +15,29 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from routers import analyze, optimize, chat
+
+INTERNAL_SECRET = os.environ.get("INTERNAL_API_SECRET", "")
 
 app = FastAPI(title="M3-Mix API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten in production
+    allow_origins=os.environ.get("ALLOWED_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def verify_internal_secret(request: Request, call_next):
+    if request.url.path == "/health":
+        return await call_next(request)
+    if INTERNAL_SECRET and request.headers.get("X-Internal-Token") != INTERNAL_SECRET:
+        return JSONResponse({"detail": "Forbidden"}, status_code=403)
+    return await call_next(request)
 
 app.include_router(analyze.router, prefix="/analyze", tags=["analyze"])
 app.include_router(optimize.router, prefix="/optimize", tags=["optimize"])

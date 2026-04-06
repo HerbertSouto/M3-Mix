@@ -21,7 +21,7 @@ async def chat(req: ChatRequest):
             yield "data: [DONE]\n\n"
         except Exception as e:
             logger.exception("Chat error: %s", e)
-            yield f"data: [ERROR] {e}\n\n"
+            yield "data: [ERROR] Ocorreu um erro interno\n\n"
             yield "data: [DONE]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")

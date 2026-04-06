@@ -1,7 +1,8 @@
 import io
 import logging
+import os
 import pandas as pd
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, HTTPException
 from models.schemas import AnalyzeRequest, StatusResponse
 from services import mmm as mmm_service
 from services import optimizer as optimizer_service
@@ -69,7 +70,17 @@ def _run_analysis(analysis_id: str, csv_url: str, channels: list[str]):
         raise
 
 
+_SUPABASE_URL = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
+_MAX_CHANNELS = 20
+
+
 @router.post("", response_model=StatusResponse)
 async def start_analysis(req: AnalyzeRequest, background_tasks: BackgroundTasks):
+    if _SUPABASE_URL and not req.csv_url.startswith(_SUPABASE_URL):
+        raise HTTPException(status_code=400, detail="csv_url inválida")
+    if not req.channels or len(req.channels) > _MAX_CHANNELS:
+        raise HTTPException(status_code=400, detail="channels inválido")
+    if not all(ch.endswith("_spend") and ch.isidentifier() for ch in req.channels):
+        raise HTTPException(status_code=400, detail="channels inválido")
     background_tasks.add_task(_run_analysis, req.analysis_id, req.csv_url, req.channels)
     return StatusResponse(analysis_id=req.analysis_id, status="processing")

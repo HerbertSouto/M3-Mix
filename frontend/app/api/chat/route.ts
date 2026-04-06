@@ -7,7 +7,10 @@ export async function POST(req: NextRequest) {
   try {
     response = await fetch(`${process.env.FASTAPI_URL}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Internal-Token': process.env.INTERNAL_API_SECRET ?? '',
+      },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60_000), // 60s max — Groq can be slow on first token
     })

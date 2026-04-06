@@ -5,7 +5,10 @@ export async function POST(req: NextRequest) {
 
   const response = await fetch(`${process.env.FASTAPI_URL}/optimize`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Internal-Token': process.env.INTERNAL_API_SECRET ?? '',
+    },
     body: JSON.stringify(body),
   })
 

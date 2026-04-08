@@ -690,7 +690,7 @@ export default function HomePage() {
             <button
               onClick={() => {
                 fetch('/exemplo-mmm.xlsx')
-                  .then(r => r.blob())
+                  .then(r => { if (!r.ok) throw new Error('download failed'); return r.blob() })
                   .then(blob => {
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
@@ -699,6 +699,7 @@ export default function HomePage() {
                     a.click()
                     URL.revokeObjectURL(url)
                   })
+                  .catch(() => alert('Erro ao baixar o arquivo. Tente novamente.'))
               }}
               className="m3-dl-btn"
               style={{

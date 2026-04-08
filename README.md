@@ -7,7 +7,9 @@ Upload a CSV with your media spend data. Get Bayesian ROAS by channel, saturatio
 [![Live App](https://img.shields.io/badge/app-m3mix.vercel.app-e4ff1a?style=flat&labelColor=07070f)](https://m3mix.vercel.app)
 [![Docs](https://img.shields.io/badge/docs-herbertsouto.github.io/M3--Mix-e4ff1a?style=flat&labelColor=07070f)](https://herbertsouto.github.io/M3-Mix/)
 
-![M3-Mix preview](assets/preview.png)
+<p align="center">
+  <img src="assets/preview.png" alt="M3-Mix preview" width="600"/>
+</p>
 
 ---
 

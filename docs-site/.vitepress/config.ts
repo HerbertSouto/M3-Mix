@@ -4,7 +4,7 @@ export default defineConfig({
   title: 'M3-Mix Docs',
   description: 'Technical documentation for the M3-Mix Marketing Mix Modeling platform',
   base: '/M3-Mix/',
-  head: [['link', { rel: 'icon', href: '/M3-Mix/favicon.ico' }]],
+  head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/M3-Mix/logo.svg' }]],
 
   themeConfig: {
     logo: { light: '/logo.svg', dark: '/logo.svg', alt: 'M3-Mix' },

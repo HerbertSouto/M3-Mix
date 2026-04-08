@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { internalHeaders } from '@/lib/api'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
 
   const response = await fetch(`${process.env.FASTAPI_URL}/optimize`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Internal-Token': process.env.INTERNAL_API_SECRET ?? '',
-    },
+    headers: internalHeaders(),
     body: JSON.stringify(body),
   })
 

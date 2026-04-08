@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import { getClientIp, internalHeaders } from '@/lib/api'
 
 // Secondary IP-based rate limit (primary is session_id on the backend)
 // In-memory: resets on cold start, but good enough as a secondary defense
@@ -18,9 +19,7 @@ function checkChatIpLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-          ?? req.headers.get('x-real-ip')
-          ?? 'unknown'
+  const ip = getClientIp(req)
 
   if (!checkChatIpLimit(ip)) {
     return new Response(null, { status: 429 })
@@ -31,10 +30,7 @@ export async function POST(req: NextRequest) {
   try {
     response = await fetch(`${process.env.FASTAPI_URL}/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Internal-Token': process.env.INTERNAL_API_SECRET ?? '',
-      },
+      headers: internalHeaders(),
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60_000), // 60s max — Groq can be slow on first token
     })

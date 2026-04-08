@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { getClientIp, internalHeaders } from '@/lib/api'
 import { read as xlsxRead, utils as xlsxUtils } from 'xlsx'
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB
@@ -37,9 +38,7 @@ async function checkUploadRateLimit(ip: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-          ?? req.headers.get('x-real-ip')
-          ?? 'unknown'
+  const ip = getClientIp(req)
 
   const allowed = await checkUploadRateLimit(ip)
   if (!allowed) {
@@ -114,10 +113,7 @@ export async function POST(req: NextRequest) {
 
   const backendRes = await fetch(`${process.env.FASTAPI_URL}/analyze`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Internal-Token': process.env.INTERNAL_API_SECRET ?? '',
-    },
+    headers: internalHeaders(),
     body: JSON.stringify({
       analysis_id: analysis.id,
       csv_url: publicUrl,

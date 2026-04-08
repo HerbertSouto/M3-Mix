@@ -73,6 +73,6 @@ Client Component com estado local.
 |----------|-------------|--------|
 | `FASTAPI_URL` | API routes (server) | Privada |
 | `INTERNAL_API_SECRET` | API routes (server) | Privada |
-| `NEXT_PUBLIC_SUPABASE_URL` | Inicialização do client | Pública |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Inicialização do client | Pública |
+| `NEXT_PUBLIC_SUPABASE_URL` | API routes (server) | Pública |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Não usado ativamente — pode ser mantido para compatibilidade com o SDK | Pública |
 | `SUPABASE_SERVICE_ROLE_KEY` | API routes (server) | Privada |

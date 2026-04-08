@@ -41,9 +41,9 @@
 
 ### Next.js como BFF (Backend for Frontend)
 
-Todas as chamadas ao FastAPI partem dos API routes do Next.js — nunca direto do browser. Isso mantém o `INTERNAL_API_SECRET` e o `SUPABASE_SERVICE_ROLE_KEY` fora do cliente.
+Todas as chamadas ao FastAPI e ao Supabase partem dos API routes do Next.js — nunca direto do browser. Isso mantém `INTERNAL_API_SECRET` e `SUPABASE_SERVICE_ROLE_KEY` exclusivamente no servidor.
 
-O browser só usa o `NEXT_PUBLIC_SUPABASE_ANON_KEY` para... nada. Todas as leituras de dados passam por API routes server-side. O anon key existe no env apenas por compatibilidade de inicialização.
+O `NEXT_PUBLIC_SUPABASE_ANON_KEY` está no env mas **não é usado em nenhuma leitura de dados**. Não existe cliente Supabase no lado do browser — o `lib/supabase/client.ts` foi removido após a migração de todas as leituras para API routes server-side.
 
 ### Análise como background task
 

@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  if (response.status === 429) {
+    return new Response(null, { status: 429 })
+  }
+
   if (!response.ok || !response.body) {
     return new Response(`data: [ERROR] Backend error ${response.status}\n\ndata: [DONE]\n\n`, {
       status: 200,

@@ -80,7 +80,7 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
 
     if (res.status === 429) {
       setLimited(true)
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Você atingiu o limite de mensagens desta sessão.' }])
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Você atingiu o limite de perguntas desta sessão. Para continuar, abra uma nova análise.' }])
       setLoading(false)
       return
     }
@@ -223,7 +223,7 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !limited && send()}
             disabled={limited}
-            placeholder={limited ? 'Limite de mensagens atingido' : 'Pergunte sobre a análise...'}
+            placeholder={limited ? 'Limite de perguntas atingido — abra uma nova análise' : 'Pergunte sobre a análise...'}
             style={{
               flex: 1,
               background: 'rgba(238,238,245,.04)',
@@ -251,38 +251,88 @@ export function FloatingChat({ analysisId, analysisContext }: Props) {
       </div>
 
       {/* Trigger button */}
-      <button
-        onClick={() => setOpen(o => !o)}
-        style={{
-          position: 'fixed', bottom: 28, right: 28, zIndex: 50,
-          width: 52, height: 52, borderRadius: '50%',
-          background: open ? 'rgba(238,238,245,.08)' : ACCENT,
-          border: open ? '1px solid rgba(238,238,245,.12)' : 'none',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: open ? 'none' : `0 0 32px ${ACCENT}40`,
-          transition: 'all .2s',
-          fontSize: 20,
-        }}
-      >
-        {open ? (
-          <span style={{ color: 'rgba(238,238,245,.4)', fontSize: 18, lineHeight: 1 }}>×</span>
-        ) : (
-          <span style={{ fontSize: 20 }}>💬</span>
+      <div style={{ position: 'fixed', bottom: 28, right: 28, zIndex: 50 }}>
+        <style>{`
+          @keyframes m3-pulse {
+            0%   { transform: scale(1);   opacity: .5; }
+            100% { transform: scale(1.7); opacity: 0;  }
+          }
+          @keyframes m3-spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+          .m3-fab:hover { transform: scale(1.08) !important; }
+          .m3-fab:active { transform: scale(0.95) !important; }
+        `}</style>
+
+        {/* Pulse ring — only when closed */}
+        {!open && (
+          <>
+            <div style={{
+              position: 'absolute', inset: -6,
+              borderRadius: '50%',
+              border: `1.5px solid ${ACCENT}`,
+              animation: 'm3-pulse 2s ease-out infinite',
+              pointerEvents: 'none',
+            }}/>
+            <div style={{
+              position: 'absolute', inset: -6,
+              borderRadius: '50%',
+              border: `1.5px solid ${ACCENT}`,
+              animation: 'm3-pulse 2s ease-out infinite .8s',
+              pointerEvents: 'none',
+            }}/>
+          </>
         )}
-        {!open && unread > 0 && (
-          <span style={{
-            position: 'absolute', top: -2, right: -2,
-            width: 18, height: 18, borderRadius: '50%',
-            background: '#f43f5e', color: '#fff',
-            fontSize: 10, fontWeight: 700, fontFamily: SYNE,
+
+        <button
+          className="m3-fab"
+          onClick={() => setOpen(o => !o)}
+          style={{
+            position: 'relative',
+            width: 56, height: 56, borderRadius: '50%',
+            background: open
+              ? '#1a1a2e'
+              : `conic-gradient(from 180deg, ${ACCENT}, #a3e635, ${ACCENT})`,
+            border: open ? `1px solid rgba(238,238,245,.15)` : 'none',
+            cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '2px solid #09090f',
-          }}>
-            {unread}
-          </span>
-        )}
-      </button>
+            boxShadow: open
+              ? 'inset 0 0 0 1px rgba(255,255,255,.06)'
+              : `0 0 0 1px ${ACCENT}30, 0 8px 32px ${ACCENT}50, 0 2px 8px rgba(0,0,0,.4)`,
+            transition: 'all .25s cubic-bezier(.34,1.56,.64,1)',
+          }}
+        >
+          {open ? (
+            /* × close icon */
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 3l10 10M13 3L3 13" stroke="rgba(238,238,245,.4)" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          ) : (
+            /* Spark / AI icon */
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z"
+                fill="#07070f" stroke="#07070f" strokeWidth=".5" strokeLinejoin="round"/>
+              <path d="M19 16L19.8 18.2L22 19L19.8 19.8L19 22L18.2 19.8L16 19L18.2 18.2L19 16Z"
+                fill="#07070f" opacity=".7"/>
+            </svg>
+          )}
+
+          {!open && unread > 0 && (
+            <span style={{
+              position: 'absolute', top: 0, right: 0,
+              width: 17, height: 17, borderRadius: '50%',
+              background: '#f43f5e', color: '#fff',
+              fontSize: 9, fontWeight: 700, fontFamily: SYNE,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid #09090f',
+              boxShadow: '0 2px 8px #f43f5e80',
+            }}>
+              {unread}
+            </span>
+          )}
+        </button>
+      </div>
     </>
   )
 }

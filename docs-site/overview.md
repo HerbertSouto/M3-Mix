@@ -20,8 +20,7 @@ M3-Mix é uma aplicação web que leva Marketing Mix Modeling (MMM) para o dia a
 | Frontend | Next.js 16 (App Router) + TypeScript |
 | UI | Tailwind CSS + shadcn/ui |
 | Charts | Recharts |
-| AI — narrativa | LLaMA 3.3 70B via Groq |
-| AI — chat | Claude via Anthropic API |
+| AI — narrativa e chat | LLaMA 3.3 70B via Groq |
 | Backend | FastAPI (Python 3.11+) |
 | MMM | PyMC-Marketing 0.x + PyMC |
 | Otimização | scipy.optimize (SLSQP) |

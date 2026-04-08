@@ -63,7 +63,7 @@ Client Component com estado local.
    → insert em analyses (status: processing)
    → POST /analyze no FastAPI (fire and forget)
 4. Redirect para /analysis/[id]
-5. Polling em /api/analysis/[id]/status a cada 3s
+5. Polling em /api/analysis/[id]/status a cada 2s
 6. Quando status=completed, página carrega os dados
 ```
 

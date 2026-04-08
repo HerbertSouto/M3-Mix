@@ -28,11 +28,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
 
-# LLM (narrativa via Groq)
+# LLM — narrativa executiva e chat (Groq)
 GROQ_API_KEY=gsk_...
-
-# Chat (Anthropic)
-ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 ## Banco de dados (Supabase)
@@ -108,7 +105,7 @@ uv sync
 No Railway, conecte o repositório e configure:
 - **Root Directory:** `backend`
 - **Start command:** `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`
-- **Environment Variables:** `INTERNAL_API_SECRET`, `ALLOWED_ORIGINS`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`, `ANTHROPIC_API_KEY`
+- **Environment Variables:** `INTERNAL_API_SECRET`, `ALLOWED_ORIGINS`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GROQ_API_KEY`
 
 ## Desenvolvimento local
 

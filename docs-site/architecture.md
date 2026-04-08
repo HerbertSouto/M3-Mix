@@ -30,7 +30,8 @@
 │  ├── chat_rate_     │  │                                │
 │  │   limits         │  │  ┌──────────────────────────┐  │
 │  └── upload_rate_   │  │  │  PyMC-Marketing          │  │
-│      limits         │  │  │  + Groq (LLaMA 3.3 70B)  │  │
+│      limits         │  │  │  Groq — LLaMA 3.3 70B    │  │
+│                     │  │  │  (narrativa + chat)       │  │
 │                     │  │  └──────────────────────────┘  │
 │  Storage            │  └────────────────────────────────┘
 │  └── csv-uploads    │
@@ -47,7 +48,7 @@ O `NEXT_PUBLIC_SUPABASE_ANON_KEY` está no env mas **não é usado em nenhuma le
 
 ### Análise como background task
 
-O endpoint `POST /analyze` retorna imediatamente com `202 Accepted`. O processamento (download do CSV, fitting do modelo, extração de resultados, geração de narrativa) roda em background task no FastAPI. O frontend faz polling em `/api/analysis/[id]/status` até o status mudar para `completed` ou `failed`.
+O endpoint `POST /analyze` retorna imediatamente com `200 OK`. O processamento (download do CSV, fitting do modelo, extração de resultados, geração de narrativa) roda em background task no FastAPI. O frontend faz polling em `/api/analysis/[id]/status` até o status mudar para `completed` ou `failed`.
 
 Isso evita timeout HTTP nas análises que levam 5–8 minutos.
 

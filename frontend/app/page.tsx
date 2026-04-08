@@ -672,9 +672,19 @@ export default function HomePage() {
                 Dataset sintético pronto para testar o M3-Mix do início ao fim — sem precisar preparar nada.
               </p>
             </div>
-            <a
-              href="/exemplo-mmm.xlsx"
-              download
+            <button
+              onClick={() => {
+                fetch('/exemplo-mmm.xlsx')
+                  .then(r => r.blob())
+                  .then(blob => {
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = 'exemplo-mmm.xlsx'
+                    a.click()
+                    URL.revokeObjectURL(url)
+                  })
+              }}
               className="m3-dl-btn"
               style={{
                 flexShrink: 0, alignSelf: 'center',
@@ -684,12 +694,11 @@ export default function HomePage() {
                 borderRadius: 8, padding: '11px 24px',
                 fontFamily: SYNE, fontWeight: 700, fontSize: 13,
                 cursor: 'pointer', letterSpacing: '-.01em',
-                textDecoration: 'none', display: 'inline-block',
                 whiteSpace: 'nowrap',
               }}
             >
               Baixar .xlsx ↓
-            </a>
+            </button>
           </div>
 
           {/* Detail grid */}

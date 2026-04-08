@@ -21,7 +21,7 @@ FASTAPI_URL=https://seu-app.up.railway.app
 INTERNAL_API_SECRET=gere-um-segredo-longo-aqui
 
 # CORS — origens permitidas no backend
-ALLOWED_ORIGINS=https://m3mix.vercel.app
+ALLOWED_ORIGINS=https://your-app.vercel.app
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co

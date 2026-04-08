@@ -2,7 +2,53 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { read as xlsxRead, utils as xlsxUtils } from 'xlsx'
 
+const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10 MB
+const UPLOAD_LIMIT   = 5                  // max uploads per IP per hour
+
+async function checkUploadRateLimit(ip: string): Promise<boolean> {
+  const supabase   = createServerClient()
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+
+  const { data } = await supabase
+    .from('upload_rate_limits')
+    .select('count, window_start')
+    .eq('ip', ip)
+    .maybeSingle()
+
+  if (!data) {
+    await supabase.from('upload_rate_limits')
+      .insert({ ip, count: 1, window_start: new Date().toISOString() })
+    return true
+  }
+
+  if (data.window_start < oneHourAgo) {
+    await supabase.from('upload_rate_limits')
+      .update({ count: 1, window_start: new Date().toISOString() })
+      .eq('ip', ip)
+    return true
+  }
+
+  if (data.count >= UPLOAD_LIMIT) return false
+
+  await supabase.from('upload_rate_limits')
+    .update({ count: data.count + 1 })
+    .eq('ip', ip)
+  return true
+}
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+          ?? req.headers.get('x-real-ip')
+          ?? 'unknown'
+
+  const allowed = await checkUploadRateLimit(ip)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Limite de análises por hora atingido. Tente novamente mais tarde.' },
+      { status: 429 }
+    )
+  }
+
   let formData: FormData
   try {
     formData = await req.formData()
@@ -16,6 +62,10 @@ export async function POST(req: NextRequest) {
   const channels = channelsRaw ? (JSON.parse(channelsRaw) as string[]) : []
 
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+
+  if (file.size > MAX_FILE_BYTES) {
+    return NextResponse.json({ error: 'Arquivo muito grande. Máximo permitido: 10 MB.' }, { status: 413 })
+  }
   console.log('[upload] file:', file.name, file.size, 'channels:', channels)
 
   const supabase = createServerClient()

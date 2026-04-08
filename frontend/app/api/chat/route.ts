@@ -1,6 +1,30 @@
 import { NextRequest } from 'next/server'
 
+// Secondary IP-based rate limit (primary is session_id on the backend)
+// In-memory: resets on cold start, but good enough as a secondary defense
+const _ipCounts = new Map<string, { count: number; resetAt: number }>()
+const CHAT_IP_LIMIT = 120 // messages per IP per hour
+
+function checkChatIpLimit(ip: string): boolean {
+  const now   = Date.now()
+  const entry = _ipCounts.get(ip)
+  if (!entry || entry.resetAt < now) {
+    _ipCounts.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 })
+    return true
+  }
+  if (entry.count >= CHAT_IP_LIMIT) return false
+  entry.count++
+  return true
+}
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+          ?? req.headers.get('x-real-ip')
+          ?? 'unknown'
+
+  if (!checkChatIpLimit(ip)) {
+    return new Response(null, { status: 429 })
+  }
   const body = await req.json()
 
   let response: Response

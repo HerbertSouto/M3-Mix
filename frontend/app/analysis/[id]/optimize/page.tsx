@@ -1,7 +1,6 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { BudgetSlider } from '@/components/optimize/BudgetSlider'
 import { AnalysisResults, BudgetRecommendation } from '@/lib/types'
 import Link from 'next/link'
@@ -40,13 +39,9 @@ export default function OptimizePage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase
-      .from('analysis_results')
-      .select('*')
-      .eq('analysis_id', id)
-      .single()
-      .then(({ data }) => {
+    fetch(`/api/analysis/${id}/results`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
         if (data) {
           setResults(data as AnalysisResults)
           const currentTotal = Object.values(

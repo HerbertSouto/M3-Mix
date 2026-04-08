@@ -462,6 +462,112 @@ export default function HomePage() {
         <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(238,238,245,.07) 30%, rgba(238,238,245,.07) 70%, transparent)' }}/>
       </div>
 
+      {/* ── O PROBLEMA ── */}
+      <section style={{
+        position: 'relative', zIndex: 10,
+        maxWidth: 1160, margin: '0 auto',
+        padding: '72px 48px 80px',
+      }}>
+        <div style={{ maxWidth: 560, marginBottom: 56 }}>
+          <p style={{
+            fontSize: 10, color: 'rgba(238,238,245,.3)',
+            letterSpacing: '.1em', fontWeight: 600,
+            textTransform: 'uppercase', fontFamily: MONO,
+            marginBottom: 10,
+          }}>o problema</p>
+          <h2 style={{
+            fontFamily: SYNE, fontWeight: 800,
+            fontSize: 'clamp(24px, 3vw, 36px)',
+            letterSpacing: '-.03em', lineHeight: 1.1, marginBottom: 16,
+          }}>
+            Você sabe quanto cada canal<br/>
+            <span style={{ color: ACCENT }}>realmente gerou?</span>
+          </h2>
+          <p style={{
+            fontSize: 15, color: 'rgba(238,238,245,.38)',
+            lineHeight: 1.75,
+          }}>
+            Last-click mente. Feeling é arriscado. Marketing Mix Modeling entrega atribuição
+            real — baseada em estatística, não na convenção das plataformas.
+          </p>
+        </div>
+
+        <div className="m3-problem-grid" style={{
+          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 2,
+        }}>
+          {[
+            {
+              q: 'Quanto cada canal gera de verdade?',
+              a: 'Isola a contribuição incremental de cada mídia — sem double-counting, sem viés de atribuição das próprias plataformas.',
+              color: ACCENT,
+            },
+            {
+              q: 'Onde estou desperdiçando budget?',
+              a: 'Identifica canais saturados onde aumentar o investimento já não traz retorno proporcional.',
+              color: '#60a5fa',
+            },
+            {
+              q: 'Qual o melhor mix de verba?',
+              a: 'Simula realocações entre canais e projeta o impacto na receita antes de você executar qualquer mudança.',
+              color: '#34d399',
+            },
+            {
+              q: 'Qual o efeito da mídia ao longo do tempo?',
+              a: 'Modela o carryover — a mídia de hoje continua gerando resultado nas semanas seguintes. Isso muda tudo no cálculo de ROAS.',
+              color: '#a78bfa',
+            },
+          ].map(({ q, a, color }, i) => (
+            <div
+              key={i}
+              style={{
+                padding: '32px 36px',
+                border: '1px solid rgba(238,238,245,.06)',
+                borderRadius: 12,
+                background: 'rgba(238,238,245,.018)',
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'border-color .2s, transform .2s, background .2s',
+                cursor: 'default',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLElement
+                el.style.borderColor = `${color}40`
+                el.style.transform = 'translateY(-3px)'
+                el.style.background = `color-mix(in srgb, ${color} 4%, rgba(238,238,245,.018))`
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLElement
+                el.style.borderColor = 'rgba(238,238,245,.06)'
+                el.style.transform = 'translateY(0)'
+                el.style.background = 'rgba(238,238,245,.018)'
+              }}
+            >
+              <div style={{
+                position: 'absolute', top: 0, left: 0,
+                width: '100%', height: 2,
+                background: `linear-gradient(90deg, ${color}60, transparent)`,
+              }}/>
+              <p style={{
+                fontFamily: SYNE, fontWeight: 700, fontSize: 15,
+                letterSpacing: '-.01em', marginBottom: 10, color: '#eeeef5',
+              }}>{q}</p>
+              <p style={{
+                fontSize: 13, color: 'rgba(238,238,245,.35)', lineHeight: 1.7,
+              }}>{a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── DIVIDER ── */}
+      <div style={{
+        position: 'relative', zIndex: 10,
+        maxWidth: 1160, margin: '0 auto', padding: '0 48px',
+      }}>
+        <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(238,238,245,.07) 30%, rgba(238,238,245,.07) 70%, transparent)' }}/>
+      </div>
+
       {/* ── UPLOAD ZONE — protagonista ── */}
       <section ref={uploadRef} style={{
         position: 'relative', zIndex: 10,
@@ -575,6 +681,125 @@ export default function HomePage() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* ── A TECNOLOGIA ── */}
+      <section style={{
+        position: 'relative', zIndex: 10,
+        maxWidth: 1160, margin: '0 auto',
+        padding: '0 48px 96px',
+      }}>
+        <div style={{
+          border: '1px solid rgba(228,255,26,.12)',
+          borderRadius: 16,
+          background: 'linear-gradient(135deg, rgba(228,255,26,.04) 0%, rgba(238,238,245,.018) 60%)',
+          padding: '52px 56px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* Background accent */}
+          <div style={{
+            position: 'absolute', bottom: -80, right: -80,
+            width: 300, height: 300, borderRadius: '50%',
+            background: `${ACCENT}06`, pointerEvents: 'none',
+          }}/>
+
+          {/* Header */}
+          <div style={{
+            display: 'flex', alignItems: 'flex-start',
+            justifyContent: 'space-between', gap: 40,
+            flexWrap: 'wrap', marginBottom: 48,
+          }}>
+            <div style={{ maxWidth: 540 }}>
+              <p style={{
+                fontSize: 10, color: 'rgba(238,238,245,.3)',
+                letterSpacing: '.1em', fontWeight: 600,
+                textTransform: 'uppercase', fontFamily: MONO, marginBottom: 10,
+              }}>a tecnologia</p>
+              <h2 style={{
+                fontFamily: SYNE, fontWeight: 800,
+                fontSize: 'clamp(22px, 2.8vw, 32px)',
+                letterSpacing: '-.025em', lineHeight: 1.15, marginBottom: 14,
+              }}>
+                Modelagem de nível enterprise.<br/>Sem configuração.
+              </h2>
+              <p style={{
+                fontSize: 14, color: 'rgba(238,238,245,.38)', lineHeight: 1.75,
+              }}>
+                Utilizamos o <span style={{ color: 'rgba(238,238,245,.7)', fontWeight: 600 }}>PyMC-Marketing</span> — biblioteca
+                open source mantida por dezenas de contribuidores e usada por times de dados
+                de grandes anunciantes ao redor do mundo. A modelagem complexa está resolvida.
+                Você foca nas decisões.
+              </p>
+            </div>
+
+            {/* Badges */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0 }}>
+              {[
+                { label: 'PyMC-Marketing', sub: 'biblioteca open source' },
+                { label: '1.000+ estrelas', sub: 'no GitHub' },
+                { label: 'Inferência MCMC', sub: 'distribuições reais' },
+              ].map(({ label, sub }) => (
+                <div key={label} style={{
+                  display: 'flex', flexDirection: 'column',
+                  padding: '10px 18px',
+                  border: '1px solid rgba(238,238,245,.08)',
+                  borderRadius: 8,
+                  background: 'rgba(238,238,245,.03)',
+                  minWidth: 180,
+                }}>
+                  <span style={{ fontFamily: SYNE, fontWeight: 700, fontSize: 13, color: '#eeeef5' }}>{label}</span>
+                  <span style={{ fontFamily: MONO, fontSize: 10, color: 'rgba(238,238,245,.3)', marginTop: 2 }}>{sub}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 3 pillars */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 1,
+            borderTop: '1px solid rgba(238,238,245,.06)',
+            paddingTop: 32,
+          }}>
+            {[
+              {
+                icon: '~',
+                title: 'Estimativas com incerteza real',
+                body: 'O modelo retorna intervalos de credibilidade — não um número fixo. Você sabe o que é confiável e o que é faixa de variação.',
+                color: ACCENT,
+              },
+              {
+                icon: '∿',
+                title: 'Efeito de tempo modelado',
+                body: 'Adstock captura que a mídia de hoje impacta as semanas seguintes. Isso muda o ROAS real de canais como TV e Social.',
+                color: '#60a5fa',
+              },
+              {
+                icon: '⊘',
+                title: 'Independente das plataformas',
+                body: 'O modelo lê seus dados brutos — não os relatórios das próprias plataformas. Sem conflito de interesse na atribuição.',
+                color: '#34d399',
+              },
+            ].map(({ icon, title, body, color }, i) => (
+              <div key={i} style={{
+                padding: '0 28px',
+                borderRight: i < 2 ? '1px solid rgba(238,238,245,.06)' : 'none',
+              }}>
+                <div style={{
+                  fontSize: 20, color, marginBottom: 12, lineHeight: 1,
+                  fontFamily: MONO,
+                }}>{icon}</div>
+                <p style={{
+                  fontFamily: SYNE, fontWeight: 700, fontSize: 14,
+                  letterSpacing: '-.01em', marginBottom: 8, color: '#eeeef5',
+                }}>{title}</p>
+                <p style={{
+                  fontSize: 12, color: 'rgba(238,238,245,.32)', lineHeight: 1.7,
+                }}>{body}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

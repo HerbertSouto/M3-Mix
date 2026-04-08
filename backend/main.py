@@ -23,11 +23,19 @@ INTERNAL_SECRET = os.environ.get("INTERNAL_API_SECRET", "")
 
 app = FastAPI(title="M3-Mix API", version="0.1.0")
 
+_raw_origins = os.environ.get("ALLOWED_ORIGINS", "")
+if not _raw_origins:
+    logging.warning(
+        "ALLOWED_ORIGINS not set — CORS restricted to localhost:3000. "
+        "Set ALLOWED_ORIGINS=https://your-app.vercel.app in production."
+    )
+_allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()] or ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("ALLOWED_ORIGINS", "*").split(","),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_allowed_origins,
+    allow_methods=["POST", "GET"],
+    allow_headers=["Content-Type", "X-Internal-Token"],
 )
 
 

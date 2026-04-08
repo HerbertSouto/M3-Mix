@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'M3-Mix Docs',
+  appearance: 'dark',
   description: 'Technical documentation for the M3-Mix Marketing Mix Modeling platform',
   base: '/M3-Mix/',
   head: [['link', { rel: 'icon', type: 'image/svg+xml', href: '/M3-Mix/logo.svg' }]],

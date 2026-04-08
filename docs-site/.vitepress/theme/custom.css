@@ -1,0 +1,78 @@
+/* ── M3-Mix brand colors ── */
+:root {
+  --vp-c-brand-1: #c8d900;
+  --vp-c-brand-2: #b0be00;
+  --vp-c-brand-3: #e4ff1a;
+  --vp-c-brand-soft: rgba(228, 255, 26, 0.12);
+}
+
+/* ── Dark mode — project default ── */
+.dark {
+  --vp-c-brand-1: #e4ff1a;
+  --vp-c-brand-2: #d4ef00;
+  --vp-c-brand-3: #f0ff50;
+  --vp-c-brand-soft: rgba(228, 255, 26, 0.1);
+
+  /* Background */
+  --vp-c-bg:         #07070f;
+  --vp-c-bg-soft:    #0e0e1a;
+  --vp-c-bg-mute:    #13131f;
+  --vp-c-bg-elv:     #0e0e1a;
+
+  /* Borders */
+  --vp-c-divider:    rgba(238, 238, 245, 0.08);
+  --vp-c-border:     rgba(238, 238, 245, 0.1);
+
+  /* Text */
+  --vp-c-text-1: #eeeef5;
+  --vp-c-text-2: rgba(238, 238, 245, 0.6);
+  --vp-c-text-3: rgba(238, 238, 245, 0.35);
+
+  /* Nav */
+  --vp-nav-bg-color: rgba(7, 7, 15, 0.85);
+
+  /* Sidebar */
+  --vp-sidebar-bg-color: #07070f;
+
+  /* Code blocks */
+  --vp-code-block-bg: #0e0e1a;
+  --vp-code-bg: rgba(238, 238, 245, 0.06);
+}
+
+/* ── Hero name gradient ── */
+.dark .VPHero .name {
+  background: linear-gradient(120deg, #e4ff1a 20%, #a0c000 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Nav blur (match landing page) ── */
+.dark .VPNav {
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(238, 238, 245, 0.06);
+}
+
+/* ── Brand button ── */
+.dark .VPButton.medium.brand {
+  background: #e4ff1a;
+  color: #07070f;
+  border-color: #e4ff1a;
+  font-weight: 700;
+}
+
+.dark .VPButton.medium.brand:hover {
+  background: #f0ff50;
+  border-color: #f0ff50;
+}
+
+/* ── Feature cards ── */
+.dark .VPFeature {
+  background: rgba(238, 238, 245, 0.02);
+  border: 1px solid rgba(238, 238, 245, 0.07);
+}
+
+.dark .VPFeature:hover {
+  border-color: rgba(228, 255, 26, 0.25);
+  background: rgba(228, 255, 26, 0.04);
+}

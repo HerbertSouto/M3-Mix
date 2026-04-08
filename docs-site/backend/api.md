@@ -26,11 +26,17 @@ Inicia uma análise MMM em background. Retorna imediatamente — o processamento
 | `csv_url` | string | URL pública do arquivo no Supabase Storage |
 | `channels` | string[] | Colunas de mídia selecionadas pelo usuário |
 
-### Response `202`
+### Response `200`
 
 ```json
-{ "status": "processing", "analysis_id": "uuid-v4" }
+{ "analysis_id": "uuid-v4", "status": "processing" }
 ```
+
+### Validações
+
+- `csv_url` deve ter como origem o Supabase do projeto (validado pelo prefixo)
+- `channels` não pode ser vazio e tem máximo de 20 itens
+- Cada canal deve terminar com `_spend` e ser um identificador Python válido
 
 ### Background task
 
@@ -40,9 +46,11 @@ O FastAPI atualiza `analyses.step` em cada etapa:
 |------|-----------|
 | `downloading` | Baixando o CSV do Storage |
 | `fitting` | Ajustando o modelo MMM (MCMC) |
-| `extracting` | Calculando ROAS, contribuições, saturação |
-| `narrating` | Gerando narrativa com Groq |
-| `done` | Salvando resultados no Supabase |
+| `extracting` | Calculando ROAS, contribuições, saturação, adstock |
+| `optimizing` | Rodando o otimizador de budget (scipy) |
+| `narrative` | Gerando narrativa com Groq |
+| `saving` | Persistindo resultados no Supabase |
+| `done` | Concluído |
 
 Ao final, `analyses.status` muda para `completed`. Em caso de erro, para `failed`.
 
@@ -96,7 +104,7 @@ Stream de resposta do LLM (Server-Sent Events). O modelo recebe o contexto da an
 {
   "analysis_id": "uuid-v4",
   "message": "Por que o TV tem ROAS tão baixo?",
-  "session_id": "uuid-v4",
+  "session_id": "uuid-v4",     // opcional — UUID v4; habilita o rate limit por sessão
   "analysis_context": {
     "roas": { "tv_spend": 1.1, "search_spend": 2.66, "social_spend": 3.01 },
     "contributions": { "tv_spend": 0.18, "search_spend": 0.35, "social_spend": 0.28, "baseline": 0.19 }
